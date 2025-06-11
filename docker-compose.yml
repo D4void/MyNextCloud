@@ -1,0 +1,72 @@
+services:
+    
+  nc-db:
+    image: mariadb:11-noble
+    container_name: nc-db
+    #depends_on:
+    #  - traefik
+    restart: unless-stopped
+    networks:
+      - ncnet
+    volumes:
+      - nc_maria_data:/var/lib/mysql
+      - nc_maria_conf:/etc/mysql/
+      - type: tmpfs
+        target: /dev/shm
+    environment:
+      - TZ=${TZ}
+      - MARIADB_USER=${MARIADB_USER}
+      - MARIADB_PASSWORD=${MARIADB_PASSWORD}
+      - MARIADB_DATABASE=${MARIADB_DATABASE}
+      - MARIADB_RANDOM_ROOT_PASSWORD=yes
+  
+  nextcloud-aio-mastercontainer:
+    image: ghcr.io/nextcloud-releases/all-in-one:20250610_074316
+    container_name: nextcloud-aio-mastercontainer
+    depends_on:
+      - nc-db
+    restart: unless-stopped
+    ports:
+      - 80:80
+      - 8080:8080
+      - 8443:8443
+    networks:
+      - ncnet
+      - default
+    volumes:
+      #- nc_app:/var/www/html
+      - nextcloud_aio_mastercontainer:/mnt/docker-aio-config
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+    environment:
+      - MARIADB_USER=${MARIADB_USER}
+      - MARIADB_PASSWORD=${MARIADB_PASSWORD}
+      - MARIADB_DATABASE=${MARIADB_DATABASE}
+      - MARIADB_HOST=nc-db
+
+
+volumes:
+  nc_maria_data:
+    driver: local
+    driver_opts:
+      type: none
+      device: ${NC_VOL}/var-lib-mysql
+      o: bind
+  nc_maria_conf:
+    driver: local
+    driver_opts:
+      type: none
+      device: ${NC_VOL}/etc-mysql
+      o: bind
+  nc_app:
+    driver: local
+    driver_opts:
+      type: none
+      device: ${NC_VOL}/app
+      o: bind
+  nextcloud_aio_mastercontainer:
+    name: nextcloud_aio_mastercontainer
+
+networks:
+  ncnet:
+    internal: true
+    name: MyNCnet
