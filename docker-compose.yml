@@ -62,6 +62,12 @@ volumes:
       type: none
       device: ${NC_VOL}/nextcloud
       o: bind
+  # nas_volume:
+  #   driver: local
+  #   driver_opts:
+  #     type: nfs
+  #     o: addr=adresse_ip_du_nas,rw
+  #     device: ":/chemin/vers/le/partage"
 
 networks:
   ncnet:
