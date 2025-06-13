@@ -1,7 +1,7 @@
 services:
     
   nc-db:
-    image: mariadb:11-noble
+    image: mariadb:11.4-noble
     container_name: nc-db
     #depends_on:
     #  - traefik
@@ -10,7 +10,7 @@ services:
     networks:
       - ncnet
     volumes:
-      - nc_maria_data:/var/lib/mysql
+      - nc_maria_data:/var/lib/mysql:Z
       #- nc_maria_conf:/etc/mysql
       - type: tmpfs
         target: /dev/shm
@@ -21,27 +21,41 @@ services:
       - MARIADB_DATABASE=${MARIADB_DATABASE}
       - MARIADB_RANDOM_ROOT_PASSWORD=yes
   
+  nc-redis:
+    image: redis:8.0.2-alpine
+    restart: unless-stopped
+  
   nc-nextcloud:
     image: nextcloud:31.0.5-apache
     container_name: nc-nextcloud
     depends_on:
       - nc-db
+      - nc-redis
     restart: unless-stopped
     ports:
-      - 80:80
-      - 8080:8080
-      - 8443:8443
+      - 127.0.0.1:80:80
     networks:
       - ncnet
       - default
     volumes:
-      - nc_nextcloud:/var/www/html
+      - nc_nextcloud:/var/www/html:z
     environment:
       - MYSQL_USER=${MARIADB_USER}
       - MYSQL_PASSWORD=${MARIADB_PASSWORD}
       - MYSQL_DATABASE=${MARIADB_DATABASE}
       - MYSQL_HOST=nc-db
+      - REDIS_HOST=nc-redis
 
+
+  #nc-cron:
+  #    image: nextcloud:31.0.5-apache
+  #    depends_on:
+  #      - nc-db
+  #      - nc-redis
+  #    restart: unless-stopped
+  #    volumes:
+  #      - nc_nextcloud:/var/www/html:z
+  #    entrypoint: /cron.sh
 
 volumes:
   nc_maria_data:
