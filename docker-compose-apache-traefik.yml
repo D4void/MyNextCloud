@@ -31,6 +31,7 @@ services:
   nc-nextcloud:
     image: d4void/nextcloud:31.0.5-apache
     container_name: nc-nextcloud
+    hostname: ${NEXTCLOUD_FQDN}
     depends_on:
       - nc-db
       - nc-redis
@@ -50,11 +51,15 @@ services:
       - "traefik.enable=true"
       - "traefik.docker.network=MyTraefikNet"
       - "traefik.http.routers.nextcloudcontainer.rule=Host(`${NEXTCLOUD_FQDN}`)"
-      - "traefik.http.routers.nextcloudcontainer.entrypoints=websecure"
-      - "traefik.http.routers.nextcloudcontainer.tls=true"
-      - "traefik.http.routers.nextcloudcontainer.tls.certresolver=mytlschallenge"
-      - "traefik.http.routers.nextcloudcontainer.middlewares=security@file"
-      - "traefik.http.routers.nextcloudcontainer.service=mynextcloudservice"
+      - "traefik.http.routers.nextcloudcontainer.entrypoints=web"
+      - "traefik.http.routers.nextcloudcontainer.middlewares=zmcontainer-redirect-secure"
+      - "traefik.http.middlewares.nextcloudcontainer-redirect-secure.redirectscheme.scheme=https"      
+      - "traefik.http.routers.nextcloudcontainer-secure.rule=Host(`${NEXTCLOUD_FQDN}`)"
+      - "traefik.http.routers.nextcloudcontainer-secure.entrypoints=websecure"
+      - "traefik.http.routers.nextcloudcontainer-secure.tls=true"
+      - "traefik.http.routers.nextcloudcontainer-secure.tls.certresolver=mytlschallenge"
+      - "traefik.http.routers.nextcloudcontainer-secure.middlewares=security@file"
+      - "traefik.http.routers.nextcloudcontainer-secure.service=mynextcloudservice"
       - "traefik.http.services.mynextcloudservice.loadbalancer.server.port=80"
       - "traefik.http.services.mynextcloudservice.loadbalancer.server.scheme=http"
 
