@@ -35,8 +35,6 @@ services:
       - nc-db
       - nc-redis
     restart: unless-stopped
-    ports:
-      - 127.0.0.1:8080:80
     networks:
       - ncnet
       - default
@@ -57,7 +55,7 @@ services:
       - "traefik.http.routers.nextcloudcontainer.tls.certresolver=mytlschallenge"
       - "traefik.http.routers.nextcloudcontainer.middlewares=security@file"
       - "traefik.http.routers.nextcloudcontainer.service=mynextcloudservice"
-      - "traefik.http.services.mynextcloudservice.loadbalancer.server.port=${JOPLIN_PORT}"
+      - "traefik.http.services.mynextcloudservice.loadbalancer.server.port=80"
       - "traefik.http.services.mynextcloudservice.loadbalancer.server.scheme=http"
 
 
