@@ -14,7 +14,7 @@ echo "Backuping Mariadb ${MARIADB_DATABASE} database"
 
 docker run --rm \
   --name mariadb-dump \
-  --network ncnet \
+  --network MyNCnet \
   -e MYSQL_PWD=motdepasse \
   mariadb:11.4-noble \
   sh -c 'mariadb-dump -h nc-db -u ${MARIADB_USER} -p{MARIADB_PASSWORD} ${MARIADB_DATABASE}'
