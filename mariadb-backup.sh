@@ -10,14 +10,13 @@ backupfile="${MARIADB_DATABASE}_dump_$(date +"%Y-%m-%d_%Hh%Mm%S").dump"
 #
 
 echo "Backuping Mariadb ${MARIADB_DATABASE} database"
-#docker exec nc-db mariadb-dump -u ${MARIADB_USER} -p{MARIADB_PASSWORD} ${MARIADB_DATABASE} > /backup/${backupfile}
+#docker exec nc-db mariadb-dump -u ${MARIADB_USER} -p${MARIADB_PASSWORD} ${MARIADB_DATABASE} > /backup/${backupfile}
 
 docker run --rm \
   --name mariadb-dump \
   --network MyNCnet \
-  -e MYSQL_PWD=motdepasse \
   mariadb:11.4-noble \
-  sh -c 'mariadb-dump -h nc-db -u ${MARIADB_USER} -p{MARIADB_PASSWORD} ${MARIADB_DATABASE}'
+  sh -c 'mariadb-dump -h nc-db -u ${MARIADB_USER} -p${MARIADB_PASSWORD} ${MARIADB_DATABASE}'
 
 #echo "Fin maintenance Nextcloud"
 #
