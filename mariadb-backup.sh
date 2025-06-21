@@ -17,7 +17,8 @@ docker run --rm \
   --network MyNCnet \
   -e MYSQL_PWD=${MARIADB_PASSWORD} \
   mariadb:11.4-noble \
-  sh -c "echo ${MARIADB_USER}; echo ${MARIADB_DATABASE}; mariadb-dump -h nc-db -u ${MARIADB_USER} ${MARIADB_DATABASE}"
+  sh -c "echo ${MARIADB_USER}; echo ${MARIADB_DATABASE}; mariadb-dump -h nc-db -u ${MARIADB_USER} ${MARIADB_DATABASE}" \
+  > ${backupfile}
 
 #echo "Fin maintenance Nextcloud"
 #
