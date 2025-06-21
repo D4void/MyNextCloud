@@ -11,7 +11,6 @@ services:
       - ncnet
     volumes:
       - nc_maria_data:/var/lib/mysql:Z
-      - nc_maria_backup:/backup
       - type: tmpfs
         target: /dev/shm
     environment:
@@ -89,12 +88,6 @@ volumes:
     driver_opts:
       type: none
       device: ${NC_VOL}/var-lib-mysql
-      o: bind
-  nc_maria_backup:
-    driver: local
-    driver_opts:
-      type: none
-      device: ${NC_VOL}/mariadb-backup
       o: bind
   nc_nextcloud:
     driver: local
