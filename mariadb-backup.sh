@@ -17,7 +17,7 @@ docker run --rm \
   -e MYSQL_PWD=${MARIADB_PASSWORD} \
   mariadb:11.4-noble \
   sh -c "mariadb-dump --single-transaction --default-character-set=utf8mb4 -h nc-db -u ${MARIADB_USER} ${MARIADB_DATABASE}" \
-  > backup/${backupfile}
+  > ${BKP_DIR}/${backupfile}
 
 
 sleep 5

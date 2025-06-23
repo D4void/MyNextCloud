@@ -43,7 +43,9 @@ services:
       - ncnet
       - default
     volumes:
-      - nc_nextcloud:/var/www/html:z
+      - nc_config:/var/www/html/config:z
+      - nc_custom_apps:/var/www/html/custom_apps:z
+      - nc_data:/var/www/html/data:z
     environment:
       - MYSQL_USER=${MARIADB_USER}
       - MYSQL_PASSWORD=${MARIADB_PASSWORD}
@@ -89,18 +91,24 @@ volumes:
       type: none
       device: ${NC_VOL}/var-lib-mysql
       o: bind
-  nc_nextcloud:
+  nc_config:
     driver: local
     driver_opts:
       type: none
-      device: ${NC_VOL}/nextcloud
+      device: ${NC_VOL}/config
       o: bind
-  # nas_volume:
-  #   driver: local
-  #   driver_opts:
-  #     type: nfs
-  #     o: addr=adresse_ip_du_nas,rw
-  #     device: ":/chemin/vers/le/partage"
+  nc_custom_apps:
+    driver: local
+    driver_opts:
+      type: none
+      device: ${NC_VOL}/custom_apps
+      o: bind
+  nc_data:
+    driver: local
+    driver_opts:
+      type: none
+      device: ${NC_VOL}/data
+      o: bind
 
 networks:
   ncnet:

@@ -4,8 +4,11 @@
 
 source $(dirname $0)/.env
 
+DUMP_PATH=$1
+DUMP_FILE=$(basename "$DUMP_PATH")
+
 if [[ -f "$1" ]]; then
-    read -p "Are you sure you want to restore ${MARIADB_DATABASE} with dump $1 ? " -n 1 -r
+    read -p "Are you sure you want to restore ${MARIADB_DATABASE} with dump ${DUMP_PATH} ? " -n 1 -r
     echo
     if [[ $REPLY =~ ^[Yy]$ ]]
     then
@@ -27,10 +30,10 @@ if [[ -f "$1" ]]; then
         docker run --rm \
             --name mariadb-dump \
             --network MyNCnet \
-            -- volume $1:/backup/$1
+            --volume "$(dirname "$DUMP_PATH")":/backup \
             -e MYSQL_PWD=${MARIADB_PASSWORD} \
             mariadb:11.4-noble \
-            sh -c "mariadb -h nc-db -u ${MARIADB_USER} ${MARIADB_DATABASE} < /backup/$1"
+            sh -c "echo "Dump dans /backup:"; ls -l /backup; echo "Restore Mariadb dump"; mariadb -h nc-db -u ${MARIADB_USER} ${MARIADB_DATABASE} < /backup/$DUMP_FILE "
 
         echo "End Nextcloud maintenance"
         docker exec nc-nextcloud php occ maintenance:mode --off
