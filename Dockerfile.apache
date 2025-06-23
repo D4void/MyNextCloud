@@ -2,7 +2,7 @@
 #
 # docker build -t d4void/nextcloud:31.0.5-apache -f Dockerfile.apache .
 
-ARG VERSION=31.0.5
+ARG VERSION=31.0.6
   
 FROM nextcloud:${VERSION}-apache
 
