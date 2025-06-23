@@ -27,9 +27,10 @@ if [[ -f "$1" ]]; then
         docker run --rm \
             --name mariadb-dump \
             --network MyNCnet \
+            -- volume $1:/backup/$1
             -e MYSQL_PWD=${MARIADB_PASSWORD} \
             mariadb:11.4-noble \
-            sh -c "mariadb -h nc-db -u ${MARIADB_USER} ${MARIADB_DATABASE}" < $1
+            sh -c "mariadb -h nc-db -u ${MARIADB_USER} ${MARIADB_DATABASE} < /backup/$1"
 
         echo "End Nextcloud maintenance"
         docker exec nc-nextcloud php occ maintenance:mode --off
