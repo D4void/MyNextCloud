@@ -33,7 +33,7 @@ if [[ -f "$1" ]]; then
             --volume "$(dirname "$DUMP_PATH")":/backup \
             -e MYSQL_PWD=${MARIADB_PASSWORD} \
             mariadb:11.4-noble \
-            sh -c "echo "Dump dans /backup:"; ls -l /backup; echo "Restore Mariadb dump"; mariadb -h nc-db -u ${MARIADB_USER} ${MARIADB_DATABASE} < /backup/$DUMP_FILE "
+            sh -c "echo 'Dump dans /backup:'; ls -l /backup; echo 'Restore Mariadb dump'; mariadb -h nc-db -u ${MARIADB_USER} ${MARIADB_DATABASE} < /backup/$DUMP_FILE "
 
         echo "End Nextcloud maintenance"
         docker exec nc-nextcloud php occ maintenance:mode --off
