@@ -13,13 +13,13 @@ services:
       - nc_maria_data:/var/lib/mysql:Z
       - type: tmpfs
         target: /dev/shm
-    environment:
-      - MARIADB_USER=${MARIADB_USER}
-      - MARIADB_PASSWORD=${MARIADB_PASSWORD}
-      - MARIADB_DATABASE=${MARIADB_DATABASE}
-      - MARIADB_RANDOM_ROOT_PASSWORD=yes
-      - MARIADB_AUTO_UPGRADE=1
-      - MARIADB_DISABLE_UPGRADE_BACKUP=1
+    #environment:
+      #- MARIADB_USER=${MARIADB_USER}
+      #- MARIADB_PASSWORD=${MARIADB_PASSWORD}
+      #- MARIADB_DATABASE=${MARIADB_DATABASE}
+      #- MARIADB_RANDOM_ROOT_PASSWORD=yes
+      #- MARIADB_AUTO_UPGRADE=1
+      #- MARIADB_DISABLE_UPGRADE_BACKUP=1
   
   nc-redis:
     image: redis:8.0.2-alpine
@@ -47,9 +47,9 @@ services:
       - nc_custom_apps:/var/www/html/custom_apps:z
       - nc_data:/var/www/html/data:z
     environment:
-      - MYSQL_USER=${MARIADB_USER}
-      - MYSQL_PASSWORD=${MARIADB_PASSWORD}
-      - MYSQL_DATABASE=${MARIADB_DATABASE}
+      #- MYSQL_USER=${MARIADB_USER}
+      #- MYSQL_PASSWORD=${MARIADB_PASSWORD}
+      #- MYSQL_DATABASE=${MARIADB_DATABASE}
       - MYSQL_HOST=nc-db
       - REDIS_HOST=nc-redis
     labels:
@@ -77,13 +77,18 @@ services:
       - traefik
       - nc-db
       - nc-redis
+      - nc-nextcloud
     restart: unless-stopped
     networks:
       - ncnet
     volumes:
+      - nc_app:/var/www/html:z
       - nc_config:/var/www/html/config:z
       - nc_custom_apps:/var/www/html/custom_apps:z
       - nc_data:/var/www/html/data:z
+    environment:
+      - MYSQL_HOST=nc-db
+      - REDIS_HOST=nc-redis
     entrypoint: /cron.sh
 
 volumes:
@@ -92,6 +97,12 @@ volumes:
     driver_opts:
       type: none
       device: ${NC_VOL}/var-lib-mysql
+      o: bind
+  nc_app:
+    driver: local
+    driver_opts:
+      type: none
+      device: ${NC_VOL}/app
       o: bind
   nc_config:
     driver: local
