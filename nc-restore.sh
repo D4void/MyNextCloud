@@ -37,6 +37,7 @@ if [[ -f "$1" ]]; then
     fi
 else
     echo "$1 doesn't exist!"
+    exit 1
 fi
 
 TAR_PATH=$2
@@ -58,6 +59,7 @@ if [[ -f "$2" ]]; then
     fi
 else
     echo "$2 doesn't exist!"
+    exit 1
 fi
 
 #echo "End Nextcloud maintenance"
