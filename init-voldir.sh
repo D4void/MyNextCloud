@@ -12,7 +12,8 @@ if [[ ! -d ${NC_VOL}  ]]; then
     chown -R 999:999 ${NC_VOL}/var-lib-mysql
     chown -R 33:33 ${NC_VOL}/{data,config,app,custom_apps}
 
-    chmod -R 750 ${NC_VOL}/{data,config,app,custom_apps,backup}
+    chmod -R 750 ${NC_VOL}/{data,config,app,custom_apps}
+    chmod -R 777 ${NC_VOL}/backup
     chmod -R 700 ${NC_VOL}/var-lib-mysql
     chmod 755 ${NC_VOL}
 
