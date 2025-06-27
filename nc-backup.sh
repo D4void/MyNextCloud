@@ -33,7 +33,7 @@ docker run --rm \
 echo "Backuping Nextcloud data,config,custom_apps"
 BACKUPDATAFILE="nextcloud_data_$(date +"%Y-%m-%d_%Hh%Mm%S").tar.gz"
 cd ${NC_VOL}
-tar cfvz ${BKP_DIR}/${TEMPDIR}/${BACKUPDATAFILE} data/ config/ custom_apps/
+tar cfvz ${BKP_DIR}/${TEMPDIR}/${BACKUPDATAFILE} data/ config/ custom_apps/ > /dev/null
 
 echo "End Nextcloud maintenance"
 docker exec nc-nextcloud php occ maintenance:mode --off
