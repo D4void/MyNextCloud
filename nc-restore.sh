@@ -1,5 +1,7 @@
 #!/bin/bash
-# Script to restore a dump of a Mariadb Nextcloud database running in a docker container
+# Script to restore Nextcloud
+#   Restore Mariadb dump 
+#   Restore Nextcloud data,config,custom_apps
 
 
 source $(dirname $0)/.env
@@ -7,8 +9,7 @@ source $(dirname $0)/.env
 DUMP_PATH=$1
 DUMP_FILE=$(basename "$DUMP_PATH")
 
-#echo "Begin Nextcloud maintenance"
-#docker exec nc-nextcloud php occ maintenance:mode --on
+echo "Stop Nextcloud"
 docker stop nc-cron
 docker stop nc-nextcloud
 
@@ -65,9 +66,11 @@ else
     exit 1
 fi
 
+echo "Start Nextcloud"
 docker start nc-nextcloud
 docker start nc-cron
-#echo "End Nextcloud maintenance"
-#docker exec nc-nextcloud php occ maintenance:mode --off
+
+echo "End Nextcloud maintenance"
+docker exec nc-nextcloud php occ maintenance:mode --off
 
 echo "Restore success. End."

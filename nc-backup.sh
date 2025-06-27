@@ -1,5 +1,5 @@
 #!/bin/bash
-# Script to backup Nextcloud data
+# Script to backup Nextcloud
 #   make a dump of a Mariadb Nextcloud database running in a Docker container
 #   make an archive of nextcloud data
 
