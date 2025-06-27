@@ -40,7 +40,7 @@ else
 fi
 
 TAR_PATH=$2
-TAR_FILE=$(basename "$TAR_PATH")
+TAR_FILE=$(basename "${TAR_PATH}")
 
 if [[ -f "$2" ]]; then
     read -p "Are you sure you want to restore Nextcloud data/config/custom apps with ${TAR_PATH} ? " -n 1 -r
@@ -50,7 +50,7 @@ if [[ -f "$2" ]]; then
         sleep 3
         echo "Delete dir"
         rm -rf ${NC_VOL}/{data,config,custom_apps}
-        cd ${NC_VOL}/backup
+        cd $(dirname "${TAR_PATH}")
 
         echo "Restoring Nextcloud data,config,custom_apps"
         tar zxvf ${TAR_FILE} -C ${NC_VOL}
