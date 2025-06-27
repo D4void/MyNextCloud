@@ -49,6 +49,10 @@ if [[ -f "$2" ]]; then
     if [[ $REPLY =~ ^[Yy]$ ]]; then
         
         sleep 3
+
+        docker stop nc-cron
+        docker stop nc-nextcloud
+
         echo "Delete dir"
         rm -rf ${NC_VOL}/{data,config,custom_apps}
         cd $(dirname "${TAR_PATH}")
@@ -56,13 +60,16 @@ if [[ -f "$2" ]]; then
         echo "Restoring Nextcloud data,config,custom_apps"
         tar zxvf ${TAR_FILE} -C ${NC_VOL}
 
+        docker start nc-nextcloud
+        docker start nc-cron
+
     fi
 else
     echo "$2 doesn't exist!"
     exit 1
 fi
 
-#echo "End Nextcloud maintenance"
-#docker exec nc-nextcloud php occ maintenance:mode --off
+echo "End Nextcloud maintenance"
+docker exec nc-nextcloud php occ maintenance:mode --off
 
 echo "Restore success. End."
