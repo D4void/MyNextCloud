@@ -37,6 +37,7 @@ tar cfvz ${BKP_DIR}/${TEMPDIR}/${BACKUPDATAFILE} data/ config/ custom_apps/
 echo "End Nextcloud maintenance"
 docker exec nc-nextcloud php occ maintenance:mode --off
 
+chmod ugo+rwx ${BKP_DIR}/${TEMPDIR}/
 chmod ugo+rw ${BKP_DIR}/${TEMPDIR}/*
 
 echo "Backup success. End."
