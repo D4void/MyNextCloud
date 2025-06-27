@@ -7,16 +7,15 @@ source $(dirname $0)/.env
 DUMP_PATH=$1
 DUMP_FILE=$(basename "$DUMP_PATH")
 
+echo "Begin Nextcloud maintenance"
+docker exec nc-nextcloud php occ maintenance:mode --on
+
 if [[ -f "$1" ]]; then
     read -p "Are you sure you want to restore ${MARIADB_DATABASE} with dump ${DUMP_PATH} ? " -n 1 -r
     echo
-    if [[ $REPLY =~ ^[Yy]$ ]]
-    then
-        echo "Begin Nextcloud maintenance"
-        docker exec nc-nextcloud php occ maintenance:mode --on
-
-        sleep 5
-
+    if [[ $REPLY =~ ^[Yy]$ ]]; then
+        
+        sleep 3
         echo "Delete and create Nextcloud database"
         docker run --rm \
             --name mariadb \
@@ -35,12 +34,33 @@ if [[ -f "$1" ]]; then
             mariadb:11.4-noble \
             sh -c "echo 'Dump dans /backup:'; ls -l /backup; echo 'Restore Mariadb dump'; mariadb -h nc-db -u ${MARIADB_USER} ${MARIADB_DATABASE} < /backup/$DUMP_FILE "
 
-        echo "End Nextcloud maintenance"
-        docker exec nc-nextcloud php occ maintenance:mode --off
-
     fi
 else
     echo "$1 doesn't exist!"
 fi
 
-echo "End."
+TAR_PATH=$2
+TAR_FILE=$(basename "$TAR_PATH")
+
+if [[ -f "$2" ]]; then
+    read -p "Are you sure you want to restore Nextcloud data/config/custom apps with ${TAR_PATH} ? " -n 1 -r
+    echo
+    if [[ $REPLY =~ ^[Yy]$ ]]; then
+        
+        sleep 3
+        echo "Delete dir"
+        rm -rf ${NC_VOL}/{data,config,custom_apps}
+        cd ${NC_VOL}/backup
+
+        echo "Restoring Nextcloud data,config,custom_apps"
+        tar zxvf ${TAR_FILE} -C ${NC_VOL}
+
+    fi
+else
+    echo "$2 doesn't exist!"
+fi
+
+#echo "End Nextcloud maintenance"
+#docker exec nc-nextcloud php occ maintenance:mode --off
+
+echo "Restore success. End."

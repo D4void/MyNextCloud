@@ -30,6 +30,7 @@ docker run --rm \
 
 # Archive des données Nextcloud
 
+echo "Backuping Nextcloud data,config,custom_apps"
 BACKUPDATAFILE="nextcloud_data_$(date +"%Y-%m-%d_%Hh%Mm%S").tar.gz"
 cd ${NC_VOL}
 tar cfvz ${BKP_DIR}/${TEMPDIR}/${BACKUPDATAFILE} data/ config/ custom_apps/
