@@ -58,8 +58,7 @@ fi
 __log "Backuping Nextcloud data,config,custom_apps"
 BACKUPDATAFILE="nextcloud_data_$(date +"%Y-%m-%d_%Hh%Mm%S").tar"
 cd ${NC_VOL}
-#tar cfv ${BKP_DIR}/${TEMPDIR}/${BACKUPDATAFILE} data/ config/ custom_apps/ > /dev/null
-tar cfv ${BKP_DIR}/${TEMPDIR}/${BACKUPDATAFILE} config/ custom_apps/ > /dev/null
+tar cfv ${BKP_DIR}/${TEMPDIR}/${BACKUPDATAFILE} data/ config/ custom_apps/ > /dev/null
 if [[ $? -ne 0 ]]; then
 	__error "/!\\ Tar nextcloud data error." 1
 fi
