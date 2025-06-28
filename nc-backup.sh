@@ -32,9 +32,9 @@ __log() {
 set -o pipefail 1
 
 __log "Begin Nextcloud maintenance"
-docker exec nc-nextcloud php oc maintenance:mode --on
+docker exec nc-nextcloud php oc maintenance:mode --on | tee -a $LOGFILE
 if [[ $? -ne 0 ]]; then
-	__error "/!\\ Error ." 1
+	__error "/!\\ Error setting maintenance." 1
 fi
 
 sleep 3
@@ -48,8 +48,12 @@ docker run --rm \
   -e MYSQL_PWD=${MARIADB_PASSWORD} \
   mariadb:11.4-noble \
   sh -c "mariadb-dump --single-transaction --default-character-set=utf8mb4 -h nc-db -u ${MARIADB_USER} ${MARIADB_DATABASE}" \
-  > ${BKP_DIR}/${TEMPDIR}/${BACKUPDUMPFILE}
+  > ${BKP_DIR}/${TEMPDIR}/${BACKUPDUMPFILE} | tee -a $LOGFILE
+if [[ $? -ne 0 ]]; then
+	__error "/!\\ Error with mariadb dump." 1
+fi
 
+__error "test" 1
 
 # Archive des données Nextcloud
 
