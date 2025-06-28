@@ -9,16 +9,39 @@ TEMPDIR="Backup-MyNextcloud-$(date +'%Y-%m-%d_%Hh%Mm%S')"
 BACKUPDUMPFILE="${MARIADB_DATABASE}_dump_$(date +'%Y-%m-%d_%Hh%Mm%S').dump"
 
 mkdir ${BKP_DIR}/${TEMPDIR}
+LOGFILE="${BKP_DIR}/${TEMPDIR}/$(basename "$0" .sh)-$(date '+%Y_%m_%d-%Hh%M').log"
 
 
-echo "Begin Nextcloud maintenance"
-docker exec nc-nextcloud php occ maintenance:mode --on
+############################################################
+# FUNCTIONS
+############################################################
+
+__error() {
+	__log "$1"
+	set +o pipefail
+	exit 1
+}
+
+__log() {
+	echo $(date '+%Y/%m/%d-%Hh%Mm%Ss:') "$1" | tee -a $LOGFILE
+}
+
+############################################################
+# MAIN
+############################################################
+set -o pipefail 1
+
+__log "Begin Nextcloud maintenance"
+docker exec nc-nextcloud php oc maintenance:mode --on
+if [[ $? -ne 0 ]]; then
+	__error "/!\\ Error ." 1
+fi
 
 sleep 3
 
 # Dump Mariadb
 
-echo "Backuping Mariadb ${MARIADB_DATABASE} database"
+__log "Backuping Mariadb ${MARIADB_DATABASE} database"
 docker run --rm \
   --name mariadb-dump \
   --network MyNCnet \
@@ -30,15 +53,17 @@ docker run --rm \
 
 # Archive des données Nextcloud
 
-echo "Backuping Nextcloud data,config,custom_apps"
+__log "Backuping Nextcloud data,config,custom_apps"
 BACKUPDATAFILE="nextcloud_data_$(date +"%Y-%m-%d_%Hh%Mm%S").tar.gz"
 cd ${NC_VOL}
 tar cfvz ${BKP_DIR}/${TEMPDIR}/${BACKUPDATAFILE} data/ config/ custom_apps/ > /dev/null
 
-echo "End Nextcloud maintenance"
+__log "End Nextcloud maintenance"
 docker exec nc-nextcloud php occ maintenance:mode --off
 
 chmod ugo+rwx ${BKP_DIR}/${TEMPDIR}/
 chmod ugo+rw ${BKP_DIR}/${TEMPDIR}/*
 
-echo "Backup success. End."
+__log "Backup success. End."
+set +o pipefail
+exit 0
