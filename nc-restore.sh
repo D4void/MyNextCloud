@@ -58,7 +58,7 @@ if [[ -f "$2" ]]; then
         cd $(dirname "${TAR_PATH}")
 
         echo "Restore Nextcloud data,config,custom_apps"
-        tar zxvf ${TAR_FILE} -C ${NC_VOL} > /dev/null
+        tar xvf ${TAR_FILE} -C ${NC_VOL} > /dev/null
 
     fi
 else

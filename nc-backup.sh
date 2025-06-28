@@ -56,9 +56,10 @@ fi
 # Archive des données Nextcloud
 
 __log "Backuping Nextcloud data,config,custom_apps"
-BACKUPDATAFILE="nextcloud_data_$(date +"%Y-%m-%d_%Hh%Mm%S").tar.gz"
+BACKUPDATAFILE="nextcloud_data_$(date +"%Y-%m-%d_%Hh%Mm%S").tar"
 cd ${NC_VOL}
-tar cfvz ${BKP_DIR}/${TEMPDIR}/${BACKUPDATAFILE} data/ config/ custom_apps/ > /dev/null
+#tar cfv ${BKP_DIR}/${TEMPDIR}/${BACKUPDATAFILE} data/ config/ custom_apps/ > /dev/null
+tar cfv ${BKP_DIR}/${TEMPDIR}/${BACKUPDATAFILE} config/ custom_apps/ > /dev/null
 if [[ $? -ne 0 ]]; then
 	__error "/!\\ Tar nextcloud data error." 1
 fi
@@ -75,11 +76,13 @@ chmod ugo+rw ${BKP_DIR}/${TEMPDIR}/*
 __log "Backup success. End."
 set +o pipefail
 
-# Databackup on cloud
+# Databackup on cloud (https://github.com/D4void/databackup)
 
-sudo -u tfid BACKUPDIR=${BKP_DIR} -- bash -c 'cd ${BACKUPDIR} && /usr/local/bin/databackup.sh -e -i -l -mf -mode swift TestBackup-MyNextcloud * '
-if [[ $? -eq 0 ]]; then
-  rm -rf ${BKP_DIR}/*
+if $DATABACKUP; then
+  sudo -u ${DATABACKUPUSER} BACKUPDIR=${BKP_DIR} -- bash -c 'cd ${BACKUPDIR} && /usr/local/bin/databackup.sh -e -i -l -mf -mode swift TestBackup-MyNextcloud * '
+  if [[ $? -eq 0 ]]; then
+    rm -rf ${BKP_DIR}/*
+  fi
 fi
 
 exit 0
