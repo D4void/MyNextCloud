@@ -58,7 +58,8 @@ fi
 __log "Backuping Nextcloud data,config,custom_apps"
 BACKUPDATAFILE="nextcloud_data_$(date +"%Y-%m-%d_%Hh%Mm%S").tar"
 cd ${NC_VOL}
-tar cfv ${BKP_DIR}/${TEMPDIR}/${BACKUPDATAFILE} data/ config/ custom_apps/ > /dev/null
+#tar cfv ${BKP_DIR}/${TEMPDIR}/${BACKUPDATAFILE} data/ config/ custom_apps/ > /dev/null
+tar cfv ${BKP_DIR}/${TEMPDIR}/${BACKUPDATAFILE} config/ custom_apps/ > /dev/null
 if [[ $? -ne 0 ]]; then
 	__error "/!\\ Tar nextcloud data error." 1
 fi
@@ -78,7 +79,8 @@ set +o pipefail
 # Databackup on cloud (https://github.com/D4void/databackup)
 
 if $DATABACKUP; then
-  sudo -u ${DATABACKUPUSER} BACKUPDIR=${BKP_DIR} -- bash -c 'cd ${BACKUPDIR} && /usr/local/bin/databackup.sh -e -i -l -mf -mode swift TestBackup-MyNextcloud * '
+  #sudo -u ${DATABACKUPUSER} BACKUPDIR=${BKP_DIR} -- bash -c 'cd ${BACKUPDIR} && /usr/local/bin/databackup.sh -e -i -l -mf -mode swift TestBackup-MyNextcloud * '
+  cd ${BACKUPDIR} && /usr/local/bin/databackup.sh -e -i -l -mf -mode swift ${DATABACKUPNAME} *
   if [[ $? -eq 0 ]]; then
     rm -rf ${BKP_DIR}/*
   fi
