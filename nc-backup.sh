@@ -74,4 +74,12 @@ chmod ugo+rw ${BKP_DIR}/${TEMPDIR}/*
 
 __log "Backup success. End."
 set +o pipefail
+
+# Databackup on cloud
+
+sudo -u tfid BACKUPDIR="${BKP_DIR}" -- bash -c "cd ${BACKUPDIR} && /usr/local/bin/databackup.sh -e -i -l -mf -mode swift TestBackup-MyNextcloud * "
+if [[ $? -eq 0 ]]; then
+  rm -rf ${BKP_DIR}/*
+fi
+
 exit 0
