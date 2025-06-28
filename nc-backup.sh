@@ -79,8 +79,7 @@ set +o pipefail
 # Databackup on cloud (https://github.com/D4void/databackup)
 
 if $DATABACKUP; then
-  #sudo -u ${DATABACKUPUSER} BACKUPDIR=${BKP_DIR} -- bash -c 'cd ${BACKUPDIR} && /usr/local/bin/databackup.sh -e -i -l -mf -mode swift TestBackup-MyNextcloud * '
-  cd ${BACKUPDIR} && /usr/local/bin/databackup.sh -e -i -l -mf -mode swift ${DATABACKUPNAME} *
+  sudo -u ${DATABACKUPUSER} BACKUPDIR=${BKP_DIR} BACKUPNAME=${DATABACKUPNAME} -- bash -c 'cd ${BACKUPDIR} && /usr/local/bin/databackup.sh -e -i -l -mf -mode swift ${BACKUPNAME} * '
   if [[ $? -eq 0 ]]; then
     rm -rf ${BKP_DIR}/*
   fi
