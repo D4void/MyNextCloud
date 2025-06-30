@@ -29,6 +29,8 @@ services:
     restart: unless-stopped
     networks:
       - ncnet
+    volumes:
+      - nc_redis_data:/data
   
   nc-nextcloud:
     image: d4void/nextcloud:31.0.6-apache
@@ -60,7 +62,6 @@ services:
       - "traefik.http.routers.nextcloudcontainer.entrypoints=web"
       - "traefik.http.routers.nextcloudcontainer.middlewares=nextcloudcontainer-redirect-secure"
       - "traefik.http.middlewares.nextcloudcontainer-redirect-secure.redirectscheme.scheme=https"
-      #- "traefik.http.routers.nextcloudcontainer.service=mynextcloudservice"
       - "traefik.http.routers.nextcloudcontainer-secure.rule=Host(`${NEXTCLOUD_FQDN}`)"
       - "traefik.http.routers.nextcloudcontainer-secure.entrypoints=websecure"
       - "traefik.http.routers.nextcloudcontainer-secure.tls=true"
@@ -98,6 +99,12 @@ volumes:
     driver_opts:
       type: none
       device: ${NC_VOL}/var-lib-mysql
+      o: bind
+  nc_redis_data:
+    driver: local
+    driver_opts:
+      type: none
+      device: ${NC_VOL}/redis_data
       o: bind
   nc_app:
     driver: local
