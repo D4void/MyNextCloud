@@ -29,7 +29,7 @@ services:
       - nc_redis_data:/data
   
   nc-nextcloud:
-    image: d4void/nextcloud:31.0.6-apache
+    image: d4void/nextcloud:${NEXTCLOUD_TAG}
     container_name: nc-nextcloud
     hostname: ${NEXTCLOUD_FQDN}
     depends_on:
@@ -55,7 +55,7 @@ services:
 
 
   nc-cron:
-    image: d4void/nextcloud:31.0.6-apache
+    image: d4void/nextcloud:${NEXTCLOUD_TAG}
     container_name: nc-cron
     depends_on:
       - nc-db
