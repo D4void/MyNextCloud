@@ -3,8 +3,6 @@ services:
   nc-db:
     image: mariadb:11.4-noble
     container_name: nc-db
-    #depends_on:
-    #  - traefik
     restart: unless-stopped
     command: --transaction-isolation=READ-COMMITTED --log-bin=binlog --binlog-format=ROW
     networks:
@@ -20,17 +18,20 @@ services:
       - MARIADB_RANDOM_ROOT_PASSWORD=yes
       - MARIADB_AUTO_UPGRADE=1
       - MARIADB_DISABLE_UPGRADE_BACKUP=1
-  
+    
   nc-redis:
     image: redis:8.0.2-alpine
     container_name: nc-redis
     restart: unless-stopped
     networks:
       - ncnet
+    volumes:
+      - nc_redis_data:/data
   
   nc-nextcloud:
-    image: d4void/nextcloud:31.0.5-apache
+    image: d4void/nextcloud:31.0.6-apache
     container_name: nc-nextcloud
+    hostname: ${NEXTCLOUD_FQDN}
     depends_on:
       - nc-db
       - nc-redis
@@ -41,7 +42,10 @@ services:
       - ncnet
       - default
     volumes:
-      - nc_nextcloud:/var/www/html:z
+      - nc_app:/var/www/html:z
+      - nc_config:/var/www/html/config:z
+      - nc_custom_apps:/var/www/html/custom_apps:z
+      - nc_data:/var/www/html/data:z
     environment:
       - MYSQL_USER=${MARIADB_USER}
       - MYSQL_PASSWORD=${MARIADB_PASSWORD}
@@ -51,16 +55,23 @@ services:
 
 
   nc-cron:
-    image: d4void/nextcloud:31.0.5-apache
+    image: d4void/nextcloud:31.0.6-apache
     container_name: nc-cron
     depends_on:
       - nc-db
       - nc-redis
+      - nc-nextcloud
     restart: unless-stopped
     networks:
       - ncnet
     volumes:
-      - nc_nextcloud:/var/www/html:z
+      - nc_app:/var/www/html:z
+      - nc_config:/var/www/html/config:z
+      - nc_custom_apps:/var/www/html/custom_apps:z
+      - nc_data:/var/www/html/data:z
+    environment:
+      - MYSQL_HOST=nc-db
+      - REDIS_HOST=nc-redis
     entrypoint: /cron.sh
 
 volumes:
@@ -70,18 +81,36 @@ volumes:
       type: none
       device: ${NC_VOL}/var-lib-mysql
       o: bind
-  nc_nextcloud:
+  nc_redis_data:
     driver: local
     driver_opts:
       type: none
-      device: ${NC_VOL}/nextcloud
+      device: ${NC_VOL}/redis_data
       o: bind
-  # nas_volume:
-  #   driver: local
-  #   driver_opts:
-  #     type: nfs
-  #     o: addr=adresse_ip_du_nas,rw
-  #     device: ":/chemin/vers/le/partage"
+  nc_app:
+    driver: local
+    driver_opts:
+      type: none
+      device: ${NC_VOL}/app
+      o: bind
+  nc_config:
+    driver: local
+    driver_opts:
+      type: none
+      device: ${NC_VOL}/config
+      o: bind
+  nc_custom_apps:
+    driver: local
+    driver_opts:
+      type: none
+      device: ${NC_VOL}/custom_apps
+      o: bind
+  nc_data:
+    driver: local
+    driver_opts:
+      type: none
+      device: ${NC_VOL}/data
+      o: bind
 
 networks:
   ncnet:
