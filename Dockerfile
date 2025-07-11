@@ -1,4 +1,4 @@
-# Dockerfile pour créer une image Nextcloud apache avec samba-client et le module php smbclient
+# Dockerfile to build and create a Nextcloud apache image with smbclient and smbclient php module
 #
 # docker build --build-arg NEXTCLOUD_TAG=${NEXTCLOUD_TAG} -t d4void/nextcloud:${NEXTCLOUD_TAG} .
 

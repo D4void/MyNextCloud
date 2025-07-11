@@ -1,5 +1,14 @@
+# Docker compose file to run apache Nextcloud container along with a Mariadb and Redis container.
+#
+# Create .env file before starting. (check env.example) and create volume directories (init-voldir.sh)
+# Traefik Label are used to reach the server from Internet through https. Refer to MyTraefik project.
+#
+# I run this with a global compose : MyDockerApps which include Traefik and this Nextcloud compose file.
+# d4void/nextcloud is the official image I build myself from the release but with smbclient included (check dockerfile)
+#
+
 services:
-    
+
   nc-db:
     image: mariadb:11.4-noble
     container_name: nc-db
@@ -10,7 +19,7 @@ services:
     networks:
       - ncnet
     volumes:
-      - nc_maria_data:/var/lib/mysql:Z
+      - nc_maria_data:/var/lib/mysql
       - type: tmpfs
         target: /dev/shm
     environment:
@@ -45,10 +54,10 @@ services:
       - ncnet
       - default
     volumes:
-      - nc_app:/var/www/html:z
-      - nc_config:/var/www/html/config:z
-      - nc_custom_apps:/var/www/html/custom_apps:z
-      - nc_data:/var/www/html/data:z
+      - nc_app:/var/www/html
+      - nc_config:/var/www/html/config
+      - nc_custom_apps:/var/www/html/custom_apps
+      - nc_data:/var/www/html/data
     environment:
       - MYSQL_USER=${MARIADB_USER}
       - MYSQL_PASSWORD=${MARIADB_PASSWORD}
@@ -71,7 +80,6 @@ services:
       - "traefik.http.services.mynextcloudservice.loadbalancer.server.port=80"
       - "traefik.http.services.mynextcloudservice.loadbalancer.server.scheme=http"
 
-
   nc-cron:
     image: d4void/nextcloud:${NEXTCLOUD_TAG}
     container_name: nc-cron
@@ -85,10 +93,10 @@ services:
       - ncnet
       - default
     volumes:
-      - nc_app:/var/www/html:z
-      - nc_config:/var/www/html/config:z
-      - nc_custom_apps:/var/www/html/custom_apps:z
-      - nc_data:/var/www/html/data:z
+      - nc_app:/var/www/html
+      - nc_config:/var/www/html/config
+      - nc_custom_apps:/var/www/html/custom_apps
+      - nc_data:/var/www/html/data
     environment:
       - MYSQL_HOST=nc-db
       - REDIS_HOST=nc-redis

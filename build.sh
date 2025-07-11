@@ -1,9 +1,5 @@
 #!/bin/bash
-#set -e
-
-# Charger et exporter les variables du .env
-#export $(grep -v '^#' .env | xargs)
-#export NEXTCLOUD_TAG=$(grep NEXTCLOUD_TAG .env | cut -d '=' -f2)
+# Script to launch the docker image build 
 
 source .env
 
