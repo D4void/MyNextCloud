@@ -1,0 +1,13 @@
+# Dockerfile pour créer une image Nextcloud fpm alpine avec samba-client et le module php smbclient
+#
+# docker build -t d4void/nextcloud:31.0.5-fpm-alpine -f Dockerfile.fpm-alpine .
+
+ARG VERSION=31.0.5
+
+FROM nextcloud:${VERSION}-fpm-alpine
+
+RUN set -ex; \
+    apk add --no-cache --virtual .build-deps $PHPIZE_DEPS procps samba-client samba-dev; \
+    pecl install smbclient; \
+    docker-php-ext-enable smbclient; \
+    rm -rf /tmp/pear/

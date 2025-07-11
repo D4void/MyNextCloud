@@ -1,0 +1,146 @@
+# Docker compose file to run apache Nextcloud container along with a Mariadb and Redis container.
+#
+# Create .env file before starting. (check env.example) and create volume directories (init-voldir.sh)
+# Traefik Label are used to reach the server from Internet through https. Refer to MyTraefik project.
+#
+# I run this with a global compose : MyDockerApps which include Traefik and this Nextcloud compose file.
+# d4void/nextcloud is the official image I build myself from the release but with smbclient included (check dockerfile)
+#
+
+services:
+
+  nc-db:
+    image: mariadb:11.4-noble
+    container_name: nc-db
+    depends_on:
+      - traefik
+    restart: unless-stopped
+    command: --transaction-isolation=READ-COMMITTED --log-bin=binlog --binlog-format=ROW
+    networks:
+      - ncnet
+    volumes:
+      - nc_maria_data:/var/lib/mysql
+      - type: tmpfs
+        target: /dev/shm
+    environment:
+      - MARIADB_USER=${MARIADB_USER}
+      - MARIADB_PASSWORD=${MARIADB_PASSWORD}
+      - MARIADB_DATABASE=${MARIADB_DATABASE}
+      - MARIADB_RANDOM_ROOT_PASSWORD=yes
+      - MARIADB_AUTO_UPGRADE=1
+      - MARIADB_DISABLE_UPGRADE_BACKUP=1
+  
+  nc-redis:
+    image: redis:8.0.2-alpine
+    container_name: nc-redis
+    depends_on:
+      - traefik
+    restart: unless-stopped
+    networks:
+      - ncnet
+    volumes:
+      - nc_redis_data:/data
+  
+  nc-nextcloud:
+    image: d4void/nextcloud:${NEXTCLOUD_TAG}
+    container_name: nc-nextcloud
+    hostname: ${NEXTCLOUD_FQDN}
+    depends_on:
+      - traefik
+      - nc-db
+      - nc-redis
+    restart: unless-stopped
+    networks:
+      - ncnet
+      - default
+    volumes:
+      - nc_app:/var/www/html
+      - nc_config:/var/www/html/config
+      - nc_custom_apps:/var/www/html/custom_apps
+      - nc_data:/var/www/html/data
+    environment:
+      - MYSQL_USER=${MARIADB_USER}
+      - MYSQL_PASSWORD=${MARIADB_PASSWORD}
+      - MYSQL_DATABASE=${MARIADB_DATABASE}
+      - MYSQL_HOST=nc-db
+      - REDIS_HOST=nc-redis
+    labels:
+      - "traefik.enable=true"
+      - "traefik.docker.network=MyTraefikNet"
+      - "traefik.http.routers.nextcloudcontainer.rule=Host(`${NEXTCLOUD_FQDN}`)"
+      - "traefik.http.routers.nextcloudcontainer.entrypoints=web"
+      - "traefik.http.routers.nextcloudcontainer.middlewares=nextcloudcontainer-redirect-secure"
+      - "traefik.http.middlewares.nextcloudcontainer-redirect-secure.redirectscheme.scheme=https"
+      - "traefik.http.routers.nextcloudcontainer-secure.rule=Host(`${NEXTCLOUD_FQDN}`)"
+      - "traefik.http.routers.nextcloudcontainer-secure.entrypoints=websecure"
+      - "traefik.http.routers.nextcloudcontainer-secure.tls=true"
+      - "traefik.http.routers.nextcloudcontainer-secure.tls.certresolver=mytlschallenge"
+      - "traefik.http.routers.nextcloudcontainer-secure.middlewares=security@file"
+      - "traefik.http.routers.nextcloudcontainer-secure.service=mynextcloudservice"
+      - "traefik.http.services.mynextcloudservice.loadbalancer.server.port=80"
+      - "traefik.http.services.mynextcloudservice.loadbalancer.server.scheme=http"
+
+  nc-cron:
+    image: d4void/nextcloud:${NEXTCLOUD_TAG}
+    container_name: nc-cron
+    depends_on:
+      - traefik
+      - nc-db
+      - nc-redis
+      - nc-nextcloud
+    restart: unless-stopped
+    networks:
+      - ncnet
+      - default
+    volumes:
+      - nc_app:/var/www/html
+      - nc_config:/var/www/html/config
+      - nc_custom_apps:/var/www/html/custom_apps
+      - nc_data:/var/www/html/data
+    environment:
+      - MYSQL_HOST=nc-db
+      - REDIS_HOST=nc-redis
+    entrypoint: /cron.sh
+
+volumes:
+  nc_maria_data:
+    driver: local
+    driver_opts:
+      type: none
+      device: ${NC_VOL}/var-lib-mysql
+      o: bind
+  nc_redis_data:
+    driver: local
+    driver_opts:
+      type: none
+      device: ${NC_VOL}/redis_data
+      o: bind
+  nc_app:
+    driver: local
+    driver_opts:
+      type: none
+      device: ${NC_VOL}/app
+      o: bind
+  nc_config:
+    driver: local
+    driver_opts:
+      type: none
+      device: ${NC_VOL}/config
+      o: bind
+  nc_custom_apps:
+    driver: local
+    driver_opts:
+      type: none
+      device: ${NC_VOL}/custom_apps
+      o: bind
+  nc_data:
+    driver: local
+    driver_opts:
+      type: none
+      device: ${NC_VOL}/data
+      o: bind
+
+networks:
+  ncnet:
+    internal: true
+    name: MyNCnet

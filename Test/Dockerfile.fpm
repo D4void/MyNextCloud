@@ -1,0 +1,15 @@
+# Dockerfile pour créer une image Nextcloud fpm avec samba-client et le module php smbclient
+#
+# docker build -t d4void/nextcloud:31.0.5-fpm -f Dockerfile.fpm .
+
+ARG VERSION=31.0.5
+  
+FROM nextcloud:${VERSION}-fpm
+
+RUN set -ex; \
+    apt-get update; \
+    apt-get install -y --no-install-recommends procps smbclient libsmbclient-dev; \
+    rm -rf /var/lib/apt/lists/*; \
+    pecl install smbclient; \
+    docker-php-ext-enable smbclient; \
+    rm -rf /tmp/pear/
