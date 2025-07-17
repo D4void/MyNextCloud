@@ -53,7 +53,7 @@ if [[ $? -ne 0 ]]; then
 	__error "/!\\ Mariadb dump error." 1
 fi
 
-# Archive des données Nextcloud
+# Archive Nextcloud data
 
 __log "Backuping Nextcloud data,config,custom_apps"
 BACKUPDATAFILE="nextcloud_data_$(date +"%Y-%m-%d_%Hh%Mm%S").tar"
