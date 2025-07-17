@@ -3,11 +3,14 @@
 
 source .env
 
-# Vérifier que NEXTCLOUD_TAG est bien défini
-if [ -z "$NEXTCLOUD_TAG" ]; then
-  echo "Erreur : la variable NEXTCLOUD_TAG n'est pas définie dans le fichier .env"
+# Check NEXTCLOUD_TAG is defined 
+if [ -z "${NEXTCLOUD_TAG}" ]; then
+  echo "Error : NEXTCLOUD_TAG variable is not defined in .env file"
   exit 1
 fi
 
-echo "Build de l'image nextcloud avec tag : $NEXTCLOUD_TAG"
-docker build --build-arg NEXTCLOUD_TAG="$NEXTCLOUD_TAG" -t d4void/nextcloud:"$NEXTCLOUD_TAG" .
+echo "Build Nextcloud image with tag : ${NEXTCLOUD_TAG}"
+docker build --build-arg NEXTCLOUD_TAG="${NEXTCLOUD_TAG}" -t d4void/nextcloud:"${NEXTCLOUD_TAG}" .
+
+# Push the Docker image to Docker Hub
+docker push "d4void/nextcloud:${NEXTCLOUD_TAG}"
