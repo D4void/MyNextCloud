@@ -49,9 +49,26 @@ services:
     restart: unless-stopped
     networks:
       - ncnet
+      - default
     environment:
       - domain=${COLLABORA_DOMAIN}
+      - username=${COLLABORA_USERNAME}
+      - password=${COLLABORA_PASSWORD}
       - extra_params=--o:ssl.enable=false --o:user_interface.use_integration_theme=false
+    labels:
+      - "traefik.enable=true"
+      - "traefik.docker.network=MyTraefikNet"
+      - "traefik.http.routers.collaboracontainer.rule=Host(`${COLLABORA_FQDN}`)"
+      - "traefik.http.routers.collaboracontainer.entrypoints=web"
+      - "traefik.http.routers.collaboracontainer.middlewares=collaboracontainer-redirect-secure"
+      - "traefik.http.middlewares.collaboracontainer-redirect-secure.redirectscheme.scheme=https"
+      - "traefik.http.routers.collaboracontainer-secure.rule=Host(`${COLLABORA_FQDN}`)"
+      - "traefik.http.routers.collaboracontainer-secure.entrypoints=websecure"
+      - "traefik.http.routers.collaboracontainer-secure.tls=true"
+      - "traefik.http.routers.collaboracontainer-secure.tls.certresolver=mytlschallenge"
+      - "traefik.http.routers.collaboracontainer-secure.middlewares=security@file"
+      - "traefik.http.routers.collaboracontainer-secure.service=mycollaboraservice"
+      - "traefik.http.services.mycollaboraservice.loadbalancer.server.port=9980"
 
 
   nc-nextcloud:
