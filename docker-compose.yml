@@ -44,7 +44,7 @@ services:
   nc-collabora:
     image: collabora/code:25.04.4.1.1
     container_name: nc-collabora
-    hostname: ${COLLABORA_FQDN}
+    #hostname: ${COLLABORA_FQDN}
     depends_on:
       - traefik
     restart: unless-stopped
@@ -52,6 +52,7 @@ services:
       - ncnet
       - default
     environment:
+      #- server_name=${COLLABORA_FQDN}
       - domain=${COLLABORA_DOMAIN}
       - username=${COLLABORA_USERNAME}
       - password=${COLLABORA_PASSWORD}
