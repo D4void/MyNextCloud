@@ -56,7 +56,7 @@ services:
       - domain=${COLLABORA_DOMAIN}
       - username=${COLLABORA_USERNAME}
       - password=${COLLABORA_PASSWORD}
-      - extra_params=--o:ssl.enable=false --o:user_interface.use_integration_theme=false
+      - extra_params=--o:ssl.enable=false --o:ssl.termination=true --o:user_interface.use_integration_theme=false
     labels:
       - "traefik.enable=true"
       - "traefik.docker.network=MyTraefikNet"
