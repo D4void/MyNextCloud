@@ -44,6 +44,7 @@ services:
   nc-collabora:
     image: collabora/code:25.04.4.1.1
     container_name: nc-collabora
+    hostname: ${COLLABORA_FQDN}
     depends_on:
       - traefik
     restart: unless-stopped
