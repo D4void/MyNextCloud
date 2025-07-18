@@ -41,6 +41,19 @@ services:
     volumes:
       - nc_redis_data:/data
   
+  nc-collabora:
+    image: collabora/code:25.04.4.1.1
+    container_name: nc-collabora
+    depends_on:
+      - traefik
+    restart: unless-stopped
+    networks:
+      - ncnet
+    environment:
+      - domain=${COLLABORA_DOMAIN}
+      - extra_params=--o:ssl.enable=false --o:user_interface.use_integration_theme=false
+
+
   nc-nextcloud:
     image: d4void/nextcloud:${NEXTCLOUD_TAG}
     container_name: nc-nextcloud
@@ -49,6 +62,7 @@ services:
       - traefik
       - nc-db
       - nc-redis
+      - nc-collabora
     restart: unless-stopped
     networks:
       - ncnet
