@@ -87,7 +87,7 @@ services:
       - ncnet
       - default
     extra_hosts:
-      - "${COLLABORA_FQDN}::${TRAEFIK_IP}"
+      - "${COLLABORA_FQDN}:${TRAEFIK_IP}"
     volumes:
       - nc_app:/var/www/html
       - nc_config:/var/www/html/config
