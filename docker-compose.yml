@@ -10,7 +10,7 @@
 services:
 
   nc-db:
-    image: mariadb:11.4-noble
+    image: mariadb:${MARIA_TAG}
     container_name: nc-db
     depends_on:
       - traefik
@@ -31,7 +31,7 @@ services:
       - MARIADB_DISABLE_UPGRADE_BACKUP=1
   
   nc-redis:
-    image: redis:8.0.2-alpine
+    image: redis:${REDIS_TAG}
     container_name: nc-redis
     depends_on:
       - traefik
@@ -42,18 +42,19 @@ services:
       - nc_redis_data:/data
   
   nc-collabora:
-    image: collabora/code:25.04.4.1.1
+    image: collabora/code:${CODE_TAG}
     container_name: nc-collabora
-    #hostname: ${COLLABORA_FQDN}
     depends_on:
       - traefik
     restart: unless-stopped
     networks:
       - ncnet
       - default
+    extra_hosts:
+      - "${NEXTCLOUD_FQDN}:${TRAEFIK_IP}"
     environment:
-      #- server_name=${COLLABORA_FQDN}
       - domain=${COLLABORA_DOMAIN}
+      - aliasgroup1=https://${NEXTCLOUD_FQDN}
       - username=${COLLABORA_USERNAME}
       - password=${COLLABORA_PASSWORD}
       - extra_params=--o:ssl.enable=false --o:ssl.termination=true --o:user_interface.use_integration_theme=false
@@ -76,7 +77,6 @@ services:
   nc-nextcloud:
     image: d4void/nextcloud:${NEXTCLOUD_TAG}
     container_name: nc-nextcloud
-    hostname: ${NEXTCLOUD_FQDN}
     depends_on:
       - traefik
       - nc-db
@@ -86,6 +86,8 @@ services:
     networks:
       - ncnet
       - default
+    extra_hosts:
+      - "${COLLABORA_FQDN}::${TRAEFIK_IP}"
     volumes:
       - nc_app:/var/www/html
       - nc_config:/var/www/html/config
