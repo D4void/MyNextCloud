@@ -10,7 +10,7 @@
 services:
 
   nc-db:
-    image: mariadb:11.4-noble
+    image: mariadb:${MARIA_TAG}
     container_name: nc-db
     depends_on:
       - traefik
@@ -31,7 +31,7 @@ services:
       - MARIADB_DISABLE_UPGRADE_BACKUP=1
   
   nc-redis:
-    image: redis:8.0.2-alpine
+    image: redis:${REDIS_TAG}
     container_name: nc-redis
     depends_on:
       - traefik
@@ -41,18 +41,53 @@ services:
     volumes:
       - nc_redis_data:/data
   
-  nc-nextcloud:
-    image: d4void/nextcloud:${NEXTCLOUD_TAG}
-    container_name: nc-nextcloud
-    hostname: ${NEXTCLOUD_FQDN}
+  nc-collabora:
+    image: collabora/code:${CODE_TAG}
+    container_name: nc-collabora
     depends_on:
       - traefik
-      - nc-db
-      - nc-redis
     restart: unless-stopped
     networks:
       - ncnet
       - default
+    extra_hosts:
+      - "${NEXTCLOUD_FQDN}:${TRAEFIK_IP}"
+    environment:
+      - domain=${COLLABORA_DOMAIN}
+      - aliasgroup1=https://${NEXTCLOUD_FQDN}
+      - username=${COLLABORA_USERNAME}
+      - password=${COLLABORA_PASSWORD}
+      - extra_params=--o:ssl.enable=false --o:ssl.termination=true --o:user_interface.use_integration_theme=false
+    labels:
+      - "traefik.enable=true"
+      - "traefik.docker.network=MyTraefikNet"
+      - "traefik.http.routers.collaboracontainer.rule=Host(`${COLLABORA_FQDN}`)"
+      - "traefik.http.routers.collaboracontainer.entrypoints=web"
+      - "traefik.http.routers.collaboracontainer.middlewares=collaboracontainer-redirect-secure"
+      - "traefik.http.middlewares.collaboracontainer-redirect-secure.redirectscheme.scheme=https"
+      - "traefik.http.routers.collaboracontainer-secure.rule=Host(`${COLLABORA_FQDN}`)"
+      - "traefik.http.routers.collaboracontainer-secure.entrypoints=websecure"
+      - "traefik.http.routers.collaboracontainer-secure.tls=true"
+      - "traefik.http.routers.collaboracontainer-secure.tls.certresolver=mytlschallenge"
+      - "traefik.http.routers.collaboracontainer-secure.middlewares=security@file"
+      - "traefik.http.routers.collaboracontainer-secure.service=mycollaboraservice"
+      - "traefik.http.services.mycollaboraservice.loadbalancer.server.port=9980"
+
+
+  nc-nextcloud:
+    image: d4void/nextcloud:${NEXTCLOUD_TAG}
+    container_name: nc-nextcloud
+    depends_on:
+      - traefik
+      - nc-db
+      - nc-redis
+      - nc-collabora
+    restart: unless-stopped
+    networks:
+      - ncnet
+      - default
+    extra_hosts:
+      - "${COLLABORA_FQDN}:${TRAEFIK_IP}"
     volumes:
       - nc_app:/var/www/html
       - nc_config:/var/www/html/config
