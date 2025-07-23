@@ -6,6 +6,9 @@
 # I run this with a global compose : MyDockerApps which include Traefik and this Nextcloud compose file.
 # d4void/nextcloud is the official image I build myself from the release but with smbclient included (check dockerfile)
 #
+# Added resource limits for local Docker Compose (cpus & mem_limit).
+#  Nextcloud can be very resource-intensive.
+#  For use with a Swarm setup, these limits should be defined under deploy/resources/limits (cpus & memory).
 
 services:
 
