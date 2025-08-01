@@ -6,12 +6,17 @@
 # I run this with a global compose : MyDockerApps which include Traefik and this Nextcloud compose file.
 # d4void/nextcloud is the official image I build myself from the release but with smbclient included (check dockerfile)
 #
+# Added resource limits for local Docker Compose (cpus & mem_limit).
+#  Nextcloud can be very resource-intensive.
+#  For use with a Swarm setup, these limits should be defined under deploy/resources/limits (cpus & memory).
 
 services:
 
   nc-db:
     image: mariadb:${MARIA_TAG}
     container_name: nc-db
+    cpus: 0.7
+    mem_limit: 3g
     depends_on:
       - traefik
     restart: unless-stopped
@@ -33,6 +38,8 @@ services:
   nc-redis:
     image: redis:${REDIS_TAG}
     container_name: nc-redis
+    cpus: 0.25
+    mem_limit: 512m
     depends_on:
       - traefik
     restart: unless-stopped
@@ -44,6 +51,8 @@ services:
   nc-collabora:
     image: collabora/code:${CODE_TAG}
     container_name: nc-collabora
+    cpus: 0.5
+    mem_limit: 1g
     depends_on:
       - traefik
     restart: unless-stopped
@@ -77,6 +86,8 @@ services:
   nc-nextcloud:
     image: d4void/nextcloud:${NEXTCLOUD_TAG}
     container_name: nc-nextcloud
+    cpus: 0.7
+    mem_limit: 3g    
     depends_on:
       - traefik
       - nc-db
@@ -118,6 +129,8 @@ services:
   nc-cron:
     image: d4void/nextcloud:${NEXTCLOUD_TAG}
     container_name: nc-cron
+    cpus: 0.7
+    mem_limit: 3g    
     depends_on:
       - traefik
       - nc-db
