@@ -1,17 +1,11 @@
 #!/bin/bash
 # Script to backup Nextcloud
 #   make a dump of a Mariadb Nextcloud database running in a Docker container
-#   make a plakar snapshot of nextcloud data and mariadb dump
-# 
-# Ref
-# https://plakar.io/
-# https://github.com/D4void/plakarbackup.git
-
+#   make an archive of nextcloud data
 
 source $(dirname $0)/.env
 
-PLAKAR=/usr/local/bin/plakarbackup.sh
-TEMPDIR="Mariadb-dump-$(date +'%Y-%m-%d_%Hh%Mm%S')"
+TEMPDIR="Backup-MyNextcloud-$(date +'%Y-%m-%d_%Hh%Mm%S')"
 BACKUPDUMPFILE="${MARIADB_DATABASE}_dump_$(date +'%Y-%m-%d_%Hh%Mm%S').dump"
 
 mkdir ${BKP_DIR}/${TEMPDIR}
@@ -46,22 +40,28 @@ fi
 sleep 3
 
 # Dump Mariadb
-__log "Dump Mariadb ${MARIADB_DATABASE} database to ${BKP_DIR}/${TEMPDIR}/${BACKUPDUMPFILE}"
+
+__log "Backuping Mariadb ${MARIADB_DATABASE} database"
 docker run --rm \
   --name mariadb-dump \
   --network MyNCnet \
   -e MYSQL_PWD=${MARIADB_PASSWORD} \
-  mariadb:${MARIA_TAG} \
+  mariadb:11.4-noble \
   sh -c "mariadb-dump --single-transaction --default-character-set=utf8mb4 -h nc-db -u ${MARIADB_USER} ${MARIADB_DATABASE}" \
   > ${BKP_DIR}/${TEMPDIR}/${BACKUPDUMPFILE}
 if [[ $? -ne 0 ]]; then
 	__error "/!\\ Mariadb dump error." 1
 fi
 
-# Plakar snapshot Nextcloud data, config, custom_apps and mariadb dump
-__log "Make a Plakar snapshot Nextcloud data and mariadb dump to ${REPONAME}"
-$PLAKAR ${OPTS:--mf} ${REPONAME} ${BKP_DIR}/${TEMPDIR} ${NC_VOL}/data ${NC_VOL}/config ${NC_VOL}/custom_apps
-rm -rf ${BKP_DIR}/${TEMPDIR}/*.dump
+# Archive Nextcloud data
+
+__log "Backuping Nextcloud data,config,custom_apps"
+BACKUPDATAFILE="nextcloud_data_$(date +"%Y-%m-%d_%Hh%Mm%S").tar"
+cd ${NC_VOL}
+tar cfv ${BKP_DIR}/${TEMPDIR}/${BACKUPDATAFILE} data/ config/ custom_apps/ > /dev/null
+if [[ $? -ne 0 ]]; then
+	__error "/!\\ Tar nextcloud data error." 1
+fi
 
 __log "End Nextcloud maintenance"
 docker exec nc-nextcloud php occ maintenance:mode --off
@@ -69,6 +69,19 @@ if [[ $? -ne 0 ]]; then
 	__error "/!\\ Remove maintenance error." 1
 fi
 
+chmod ugo+rwx ${BKP_DIR}/${TEMPDIR}/
+chmod ugo+rw ${BKP_DIR}/${TEMPDIR}/*
+
+__log "Backup success. End."
 set +o pipefail
-rm -rf ${BKP_DIR}/*
+
+# Databackup on cloud (https://github.com/D4void/databackup)
+
+if $DATABACKUP; then
+  sudo -u ${DATABACKUPUSER} BACKUPDIR=${BKP_DIR} BACKUPNAME=${DATABACKUPNAME} -- bash -c 'cd ${BACKUPDIR} && /usr/local/bin/databackup.sh -e -i -l -r 5 -m -mode swift ${BACKUPNAME} * '
+  if [[ $? -eq 0 ]]; then
+    rm -rf ${BKP_DIR}/*
+  fi
+fi
+
 exit 0
