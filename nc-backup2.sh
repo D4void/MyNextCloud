@@ -2,11 +2,16 @@
 # Script to backup Nextcloud
 #   make a dump of a Mariadb Nextcloud database running in a Docker container
 #   make a plakar snapshot of nextcloud data and mariadb dump
+# 
+# Ref
+# https://plakar.io/
+# https://github.com/D4void/plakarbackup.git
+
 
 source $(dirname $0)/.env
 
 PLAKAR=/usr/local/bin/plakarbackup.sh
-TEMPDIR="Backup-MyNextcloud-$(date +'%Y-%m-%d_%Hh%Mm%S')"
+TEMPDIR="Mariadb-dump-$(date +'%Y-%m-%d_%Hh%Mm%S')"
 BACKUPDUMPFILE="${MARIADB_DATABASE}_dump_$(date +'%Y-%m-%d_%Hh%Mm%S').dump"
 
 mkdir ${BKP_DIR}/${TEMPDIR}
@@ -41,7 +46,7 @@ fi
 sleep 3
 
 # Dump Mariadb
-__log "Backuping Mariadb ${MARIADB_DATABASE} database"
+__log "Dump Mariadb ${MARIADB_DATABASE} database to ${BKP_DIR}/${TEMPDIR}/${BACKUPDUMPFILE}"
 docker run --rm \
   --name mariadb-dump \
   --network MyNCnet \
@@ -53,15 +58,10 @@ if [[ $? -ne 0 ]]; then
 	__error "/!\\ Mariadb dump error." 1
 fi
 
-chmod ugo+rwx ${BKP_DIR}/${TEMPDIR}/
-chmod ugo+rw ${BKP_DIR}/${TEMPDIR}/*
-
-# Plakar snapshot Nextcloud data and mariadb dump
-__log "Plakar snapshot Nextcloud data and mariadb dump"
-if $PLAKARBACKUP; then
-	$PLAKAR -m ${REPONAME} ${BKP_DIR}/${TEMPDIR} ${NC_VOL}/data ${NC_VOL}/config ${NC_VOL}/custom_apps
-  	rm -rf ${BKP_DIR}/${TEMPDIR}/*.dump
-fi
+# Plakar snapshot Nextcloud data, config, custom_apps and mariadb dump
+__log "Make a Plakar snapshot Nextcloud data and mariadb dump to ${REPONAME}"
+$PLAKAR ${OPTS:--mf} ${REPONAME} ${BKP_DIR}/${TEMPDIR} ${NC_VOL}/data ${NC_VOL}/config ${NC_VOL}/custom_apps
+rm -rf ${BKP_DIR}/${TEMPDIR}/*.dump
 
 __log "End Nextcloud maintenance"
 docker exec nc-nextcloud php occ maintenance:mode --off
