@@ -60,9 +60,7 @@ chmod ugo+rw ${BKP_DIR}/${TEMPDIR}/*
 __log "Plakar snapshot Nextcloud data and mariadb dump"
 if $PLAKARBACKUP; then
 	$PLAKAR -m ${REPONAME} ${BKP_DIR}/${TEMPDIR} ${NC_VOL}/data ${NC_VOL}/config ${NC_VOL}/custom_apps
-	if [[ $? -eq 0 ]]; then
-    	rm -rf ${BKP_DIR}/${TEMPDIR}/*.dump
-  	fi
+  	rm -rf ${BKP_DIR}/${TEMPDIR}/*.dump
 fi
 
 __log "End Nextcloud maintenance"
