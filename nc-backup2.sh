@@ -5,6 +5,7 @@
 
 source $(dirname $0)/.env
 
+PLAKAR=/usr/local/bin/plakarbackup.sh
 TEMPDIR="Backup-MyNextcloud-$(date +'%Y-%m-%d_%Hh%Mm%S')"
 BACKUPDUMPFILE="${MARIADB_DATABASE}_dump_$(date +'%Y-%m-%d_%Hh%Mm%S').dump"
 
@@ -58,7 +59,7 @@ chmod ugo+rw ${BKP_DIR}/${TEMPDIR}/*
 # Plakar snapshot Nextcloud data and mariadb dump
 __log "Plakar snapshot Nextcloud data and mariadb dump"
 if $PLAKARBACKUP; then
-	/usr/local/bin/plakarbackup.sh -m ${REPONAME} ${BKP_DIR} ${NC_VOL}/data ${NC_VOL}/config ${NC_VOL}/custom_apps
+	$PLAKAR -m ${REPONAME} ${BKP_DIR}/${TEMPDIR} ${NC_VOL}/data ${NC_VOL}/config ${NC_VOL}/custom_apps
 	if [[ $? -eq 0 ]]; then
     	rm -rf ${BKP_DIR}/${TEMPDIR}/*.dump
   	fi
