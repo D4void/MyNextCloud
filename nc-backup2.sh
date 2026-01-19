@@ -46,7 +46,7 @@ docker run --rm \
   --name mariadb-dump \
   --network MyNCnet \
   -e MYSQL_PWD=${MARIADB_PASSWORD} \
-  ${MARIA_TAG} \
+  mariadb:${MARIA_TAG} \
   sh -c "mariadb-dump --single-transaction --default-character-set=utf8mb4 -h nc-db -u ${MARIADB_USER} ${MARIADB_DATABASE}" \
   > ${BKP_DIR}/${TEMPDIR}/${BACKUPDUMPFILE}
 if [[ $? -ne 0 ]]; then
