@@ -11,6 +11,14 @@
 source $(dirname $0)/.env
 
 PLAKAR=/usr/local/bin/plakarbackup.sh
+
+# Check if plakar script exists
+if [[ ! -f "$PLAKAR" ]]; then
+    echo "Error: plakar script not found at ${PLAKAR}"
+    echo "Please install plakar or update the PLAKAR variable with the correct path"
+    exit 1
+fi
+
 TEMPDIR="Mariadb-dump-$(date +'%Y-%m-%d_%Hh%Mm%S')"
 BACKUPDUMPFILE="${MARIADB_DATABASE}_dump_$(date +'%Y-%m-%d_%Hh%Mm%S').dump"
 

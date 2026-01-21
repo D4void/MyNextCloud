@@ -6,7 +6,14 @@
 # https://github.com/D4void/plakarbackup.git
 
 
-PLAKAR=/usr//bin/plakar
+PLAKAR=/usr/bin/plakar
+
+# Check if plakar command exists
+if ! command -v $PLAKAR &> /dev/null; then
+    echo "Error: plakar command not found at ${PLAKAR}"
+    echo "Please install plakar or update the PLAKAR variable with the correct path"
+    exit 1
+fi
 
 # Parameter verification
 if [[ -z "$1" || -z "$2" || -z "$3" ]]; then
