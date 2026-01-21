@@ -6,16 +6,6 @@
 
 source $(dirname $0)/.env
 
-# Vérification des paramètres
-if [[ -z "$1" || -z "$2" ]]; then
-    echo "Usage: $0 <dump_file_path> <data_directory_path>"
-    echo ""
-    echo "Expected parameters:"
-    echo "  First parameter:  Full path to the MariaDB dump file"
-    echo "  Second parameter: Path to a directory containing the Nextcloud data folders (data, config, custom_apps)"
-    exit 1
-fi
-
 DUMP_PATH=$1
 DUMP_FILE=$(basename "$DUMP_PATH")
 
@@ -54,29 +44,21 @@ else
     exit 1
 fi
 
-DATA_PATH=$2
+TAR_PATH=$2
+TAR_FILE=$(basename "${TAR_PATH}")
 
-if [[ -d "$2" ]]; then
-    # Verify that required subdirectories exist
-    if [[ ! -d "${DATA_PATH}/data" ]] || [[ ! -d "${DATA_PATH}/config" ]] || [[ ! -d "${DATA_PATH}/custom_apps" ]]; then
-        echo "Error: ${DATA_PATH} must contain 'data', 'config', and 'custom_apps' directories"
-        exit 1
-    fi
-    
-    read -p "Are you sure you want to restore Nextcloud data/config/custom apps with the ones in ${DATA_PATH} ? " -n 1 -r
+if [[ -f "$2" ]]; then
+    read -p "Are you sure you want to restore Nextcloud data/config/custom apps with ${TAR_PATH} ? " -n 1 -r
     echo
     if [[ $REPLY =~ ^[Yy]$ ]]; then
         
         sleep 3
-        echo "Rename existing data,config,custom_apps directories to .old"
-        rm -rf ${NC_VOL}/{data.old,config.old,custom_apps.old}
-        [[ -d ${NC_VOL}/data ]] && mv ${NC_VOL}/data ${NC_VOL}/data.old
-        [[ -d ${NC_VOL}/config ]] && mv ${NC_VOL}/config ${NC_VOL}/config.old
-        [[ -d ${NC_VOL}/custom_apps ]] && mv ${NC_VOL}/custom_apps ${NC_VOL}/custom_apps.old
-        cd $(dirname "${DATA_PATH}")
+        echo "Delete data,config,custom_apps directories"
+        rm -rf ${NC_VOL}/{data,config,custom_apps}
+        cd $(dirname "${TAR_PATH}")
 
         echo "Restore Nextcloud data,config,custom_apps"
-        mv ${DATA_PATH}/{data,config,custom_apps} ${NC_VOL} > /dev/null
+        tar xvf ${TAR_FILE} -C ${NC_VOL} > /dev/null
 
     fi
 else
