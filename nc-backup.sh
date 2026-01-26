@@ -14,8 +14,8 @@ PLAKAR=/usr/local/bin/plakarbackup.sh
 
 # Check if plakar script exists
 if [[ ! -f "$PLAKAR" ]]; then
-    echo "Error: plakar script not found at ${PLAKAR}"
-    echo "Please install plakar or update the PLAKAR variable with the correct path"
+    echo "Error: plakarbackup.sh script not found at ${PLAKAR}"
+    echo "Please install plakarbackup.sh or update the PLAKAR variable with the correct path"
     exit 1
 fi
 

@@ -2,7 +2,9 @@
 # Script to restore Nextcloud
 #   Restore Mariadb dump 
 #   Restore Nextcloud data,config,custom_apps
-
+#
+# Depends on: plakar-restore.sh (to restore Nextcloud data/config/custom_apps from plakar snapshot)
+#
 
 source $(dirname $0)/.env
 
@@ -62,6 +64,10 @@ if [[ -d "$2" ]]; then
         echo "Error: ${DATA_PATH} must contain 'data', 'config', and 'custom_apps' directories"
         exit 1
     fi
+
+    # Be sure we have the right ownership and permissions
+    chown 33:33 ${DATA_PATH}/{data,config,app,custom_apps}
+    chmod 750 ${DATA_PATH}/{data,config,app,custom_apps}
     
     read -p "Are you sure you want to restore Nextcloud data/config/custom apps with the ones in ${DATA_PATH} ? " -n 1 -r
     echo
