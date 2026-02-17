@@ -12,10 +12,12 @@ Production-ready Nextcloud deployment with Docker Compose, featuring a custom im
 
 ## Prerequisites
 
-- Docker and Docker Compose installed
-- External Traefik reverse proxy running (see MyTraefik project)
-- Traefik network `MyTraefikNet` must exist
-- Plakar backup tool and `plakarbackup.sh` wrapper (optional, for backups)
+- Docker and Docker Compose
+- [MyTraefik](https://github.com/D4void/MyTraefik) project deployed (provides `MyTraefikNet` network)
+- [MyDockerApps](https://github.com/D4void/MyDockerApps) - Unified Docker Compose orchestrator
+- [Plakar](https://plakar.io/) - Plakar installed. Backup tool used for snapshots
+- [plakarbackup](https://github.com/D4void/plakarbackup) - My Bash wrapper script for plakar
+- DNS A record pointing to your server for `NEXTCLOUD_FQDN` and `COLLABORA_FQDN`
 
 ## Quick Start
 
@@ -24,6 +26,7 @@ Production-ready Nextcloud deployment with Docker Compose, featuring a custom im
 ```bash
 # Copy environment template
 cp env.example .env
+chmod 600 .env
 
 # Edit .env with your configuration
 nano .env
@@ -51,21 +54,36 @@ This creates all required directories with proper uid/gid and permissions:
 
 ### 3. Deploy Services
 
+**Recommended**: Use [MyDockerApps](https://github.com/D4void/MyDockerApps) orchestrator to manage Traefik dependency:
+
+```bash
+cd ../MyDockerApps
+docker compose up -d
+```
+
+This ensures Traefik starts first and creates the `MyTraefikNet` network before Nextcloud services attempt to connect.
+
+**Alternative** (standalone, requires MyTraefik already running):
+
 ```bash
 docker compose up -d
 ```
 
 Access Nextcloud at `https://<NEXTCLOUD_FQDN>` and complete the web setup.
 
-## Building Custom Image
 
-The custom image adds SMB client support to official Nextcloud:
+## Building Custom Image (Optionnal)
+
+The custom image adds SMB client support to official Nextcloud.
+
+If you want to build the image yourself, edit build.sh and run it:
 
 ```bash
 ./build.sh
 ```
 
 This builds `d4void/nextcloud:${NEXTCLOUD_TAG}` and pushes to Docker Hub.
+(Change to your dockerhub repository and modify docker compose file accordingly)
 
 ## Administration
 
@@ -107,7 +125,9 @@ Process:
 4. Disables maintenance mode
 5. Cleans up temporary files
 
-**Requires**: `plakarbackup.sh` at `/usr/local/bin/plakarbackup.sh` (see D4void/plakarbackup repo)
+**Dependency**: Requires [plakarbackup.sh](https://github.com/D4void/plakarbackup) installed at the path specified in `PLAKAR` variable.
+
+Currently at `/usr/local/bin/plakarbackup.sh`
 
 ### Restore
 
@@ -174,13 +194,24 @@ Configured for standalone Docker Compose (convert to `deploy.resources` for Swar
 - nc-redis: 0.25 CPU, 512MB RAM
 - nc-collabora: 0.5 CPU, 1GB RAM
 
-### Traefik Labels Pattern
+Edit cpus and mem_limit in `docker-compose.yml`
 
-All external services use:
-- HTTP → HTTPS redirect
-- `certresolver=mytlschallenge` for Let's Encrypt
-- `security@file` middleware from Traefik dynamic config
-- Explicit loadbalancer port definitions
+### Network Configuration
+
+#### Internal Network
+- `MyNCnet`: Internal network for `nc-nextcloud`, `nc-cron`, `nc-collabora`, `nc-redis`, `nc-db` communication
+
+#### External Network  
+- `MyTraefikNet`: Connection to Traefik reverse proxy (must exist before deployment)
+
+### Traefik Labels
+
+The `nc-nextcloud` and `nc-collabora` services uses these Traefik labels:
+- Routes HTTPS traffic via `Host()` rule
+- TLS termination with `certresolver=mytlschallenge` (Let's Encrypt)
+- Security middleware from `security@file` (HSTS, security headers)
+
+
 
 ## Troubleshooting
 
@@ -212,11 +243,19 @@ docker logs nc-db
 
 ## License
 
-This deployment configuration is provided as-is for personal or production use.
+This project is licensed under the MIT License. See [LICENSE](LICENSE) for details.
 
-## References
+## Related Projects
 
 - [Official Nextcloud Documentation](https://docs.nextcloud.com/)
 - [Collabora Online Documentation](https://www.collaboraoffice.com/code/)
 - [Traefik Documentation](https://doc.traefik.io/traefik/)
-- [Plakar Backup](https://plakar.io/)
+- [MyTraefik](https://github.com/D4void/MyTraefik) - Traefik reverse proxy configuration
+- [MyDockerApps](https://github.com/D4void/MyDockerApps) - Unified Docker Compose orchestrator
+- [Plakar](https://plakar.io/) - Backup tool used for snapshots
+- [plakarbackup](https://github.com/D4void/plakarbackup) - Bash wrapper script for plakar
+
+
+---
+
+*This README was initially generated with AI assistance.*
