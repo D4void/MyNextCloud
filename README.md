@@ -108,6 +108,47 @@ Use the `occ.sh` wrapper for all occ commands:
 ./occ.sh maintenance:mode --off
 ```
 
+[Maintenance doc](https://docs.nextcloud.com/server/latest/admin_manual/maintenance/backup.html#)
+
+
+### After first startup
+
+In the admin panel, you may see recommendations and you can apply them with occ command. (default phone region, maintance window, db missing indices)
+
+Examples:
+
+```bash
+./occ.sh config:system:set default_phone_region --value=FR
+./occ.sh config:system:set maintenance_window_start --value="1" --type=integer
+./occ.sh maintenance:repair --include-expensive
+./occ.sh db:add-missing-indices
+```
+
+You may also need to set up the system config for overwrite.cli.url, overwritehost and overwriteprotocol.
+
+It's possible to set this parameters in config.php in the nextcloud volume or use the occ command.
+
+```bash
+source .env
+./occ.sh config:system:set overwrite.cli.url --value=https://$NEXTCLOUD_FQDN
+./occ.sh config:system:set overwritehost --value=$NEXTCLOUD_FQDN
+./occ.sh config:system:set overwriteprotocol --value=https
+``` 
+
+At least, because of Traefik, we need to define it as a trusted proxy. 
+[Documentation reverse proxy](https://docs.nextcloud.com/server/31/admin_manual/configuration_server/reverse_proxy_configuration.html)
+
+```bash
+source .env
+./occ.sh config:system:set trusted_proxies 0 --value="$TRAEFIK_IP"
+```
+
+### User locked
+
+If a user is locked (too many authentication failure for example) : `.occ.sh user:enable <username>`
+
+
+
 ## Backup & Restore
 
 ### Backup
