@@ -56,6 +56,10 @@ services:
     depends_on:
       - traefik
     restart: unless-stopped
+    cap_add:
+      - MKNOD
+      - SYS_CHROOT
+      - SYS_ADMIN
     networks:
       - ncnet
       - default

@@ -111,7 +111,7 @@ Use the `occ.sh` wrapper for all occ commands:
 [Maintenance doc](https://docs.nextcloud.com/server/latest/admin_manual/maintenance/backup.html#)
 
 
-### After first startup
+### After first startup
 
 **Nextcloud**
 
@@ -276,11 +276,11 @@ Two-step restoration process:
 
 | Service | Image | Purpose | Port |
 |---------|-------|---------|------|
-| nc-nextcloud | d4void/nextcloud:31.0.7-apache | Main Nextcloud server | 80 |
-| nc-cron | d4void/nextcloud:31.0.7-apache | Background jobs | - |
+| nc-nextcloud | d4void/nextcloud:32.0.6-apache | Main Nextcloud server | 80 |
+| nc-cron | d4void/nextcloud:32.0.6-apache | Background jobs | - |
 | nc-db | mariadb:11.4-noble | Database with binlog | 3306 |
 | nc-redis | redis:8.0.2-alpine | Cache | 6379 |
-| nc-collabora | collabora/code:25.04.4.1.1 | Office suite | 9980 |
+| nc-collabora | collabora/code:25.04.9.1.1 | Collabora Online | 9980 |
 
 ### Networks
 
