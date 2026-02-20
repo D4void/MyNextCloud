@@ -72,7 +72,7 @@ docker compose up -d
 Access Nextcloud at `https://<NEXTCLOUD_FQDN>` and complete the web setup.
 
 
-## Building Custom Image (Optionnal)
+## Building Custom Image (Optional)
 
 The custom image adds SMB client support to official Nextcloud.
 
@@ -113,7 +113,9 @@ Use the `occ.sh` wrapper for all occ commands:
 
 ### After first startup
 
-In the admin panel, you may see recommendations and you can apply them with occ command. (default phone region, maintance window, db missing indices)
+**Nextcloud**
+
+In the admin panel, you may see recommendations and you can apply them with the occ command (default phone region, maintenance window, DB missing indices).
 
 Examples:
 
@@ -124,9 +126,9 @@ Examples:
 ./occ.sh db:add-missing-indices
 ```
 
-You may also need to set up the system config for overwrite.cli.url, overwritehost and overwriteprotocol.
+You may also need to set up the system config for `overwrite.cli.url`, `overwritehost` and `overwriteprotocol`.
 
-It's possible to set this parameters in config.php in the nextcloud volume or use the occ command.
+It's possible to set these parameters in `config.php` in the Nextcloud volume or use the occ command.
 
 ```bash
 source .env
@@ -135,17 +137,77 @@ source .env
 ./occ.sh config:system:set overwriteprotocol --value=https
 ``` 
 
-At least, because of Traefik, we need to define it as a trusted proxy. 
-[Documentation reverse proxy](https://docs.nextcloud.com/server/31/admin_manual/configuration_server/reverse_proxy_configuration.html)
+Finally, because of Traefik, we need to define it as a trusted proxy. 
+([Documentation reverse proxy](https://docs.nextcloud.com/server/31/admin_manual/configuration_server/reverse_proxy_configuration.html))
 
 ```bash
 source .env
 ./occ.sh config:system:set trusted_proxies 0 --value="$TRAEFIK_IP"
 ```
 
-### User locked
+**Collabora Online Development Edition**
 
-If a user is locked (too many authentication failure for example) : `.occ.sh user:enable <username>`
+After startup, verify Collabora access at https://${COLLABORA_FQDN}/browser/dist/admin/admin.html
+
+Configure the Nextcloud WOPI URL (Web Application Open Platform Interface) with the occ command or in the Nextcloud admin panel, Nextcloud Office menu.
+
+```bash
+source .env
+./occ.sh config:app:set richdocuments wopi_url --value="https://${COLLABORA_FQDN}/"
+```
+
+Configure the WOPI allowlist to authorize the WOPI client (the Collabora server must be allowed to act as a WOPI client). I set the IP subnet configured for `MyTraefikNet` to allow internal calls.
+
+```bash
+source ../MyTraefik/.env
+./occ.sh config:app:set richdocuments wopi_allowlist --value="$SUBNET"
+```
+
+Note:
+
+At the beginning, I faced many network issues with Collabora and Nextcloud in Docker. 
+
+First, the Nextcloud and Collabora FQDNs were resolved with their public IP and communication was done externally, leading to issues with headers.
+
+I forced the Nextcloud and Collabora FQDNs to resolve to the Traefik IP using `extra_hosts` in `docker-compose.yml`. For the Nextcloud container, the Collabora FQDN resolves to the Traefik IP address. For the Collabora container, the Nextcloud FQDN resolves to the Traefik IP address.
+
+Nextcloud service
+```
+nc-nextcloud:
+...
+extra_hosts:
+      - "${COLLABORA_FQDN}:${TRAEFIK_IP}"
+```
+
+Collabora service
+```
+nc-collabora:
+...
+extra_hosts:
+      - "${NEXTCLOUD_FQDN}:${TRAEFIK_IP}"
+```
+
+There are two other points in `docker-compose.yml` for the Collabora service. We need to authorize the Nextcloud domain to make WOPI requests with `domain=`, and we need to authorize the `origin` header from the browser with `aliasgroup1=`.
+
+So we have:
+```bash
+environment:
+      - domain=${COLLABORA_DOMAIN}
+      - aliasgroup1=https://${NEXTCLOUD_FQDN}
+```
+
+Concerning TLS, it is managed by Traefik, so we need to have:
+`- extra_params=--o:ssl.enable=false --o:ssl.termination=true`
+
+
+To debug and trace (header, IP), add:
+`- extra_params=--o:logging.level=trace`
+
+
+
+### Nextcloud User locked
+
+If a user is locked (too many authentication failures for example) : `.occ.sh user:enable <username>`
 
 
 
@@ -247,7 +309,7 @@ Edit cpus and mem_limit in `docker-compose.yml`
 
 ### Traefik Labels
 
-The `nc-nextcloud` and `nc-collabora` services uses these Traefik labels:
+The `nc-nextcloud` and `nc-collabora` services use these Traefik labels:
 - Routes HTTPS traffic via `Host()` rule
 - TLS termination with `certresolver=mytlschallenge` (Let's Encrypt)
 - Security middleware from `security@file` (HSTS, security headers)
