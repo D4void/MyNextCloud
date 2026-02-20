@@ -65,6 +65,8 @@ services:
       - default
     extra_hosts:
       - "${NEXTCLOUD_FQDN}:${TRAEFIK_IP}"
+    volumes:
+      - nc_collabora_systemplate:/opt/cool/systemplate
     environment:
       - domain=${COLLABORA_DOMAIN}
       - aliasgroup1=https://${NEXTCLOUD_FQDN}
@@ -191,6 +193,7 @@ volumes:
       type: none
       device: ${NC_VOL}/data
       o: bind
+  nc_collabora_systemplate:
 
 networks:
   ncnet:
