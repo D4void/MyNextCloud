@@ -5,7 +5,7 @@ Production-ready Nextcloud deployment with Docker Compose, featuring a custom im
 ## Features
 
 - **Custom Nextcloud Image**: Extended official image with `smbclient` for external SMB/CIFS storage
-- **Complete Stack**: Nextcloud, MariaDB 11.4, Redis cache, Collabora Online office suite
+- **Complete Stack**: Nextcloud, MariaDB 11.4, Redis cache, Collabora Online Development Edition (CODE)
 - **Traefik Integration**: Automatic HTTPS with Let's Encrypt certificates
 - **Automated Backups**: Integrated Plakar backup system for data and database
 - **Production Ready**: Resource limits, health checks, and proper volume management
@@ -176,7 +176,7 @@ Nextcloud service
 nc-nextcloud:
 ...
 extra_hosts:
-      - "${COLLABORA_FQDN}:${TRAEFIK_IP}"
+    - "${COLLABORA_FQDN}:${TRAEFIK_IP}"
 ```
 
 Collabora service
@@ -184,7 +184,7 @@ Collabora service
 nc-collabora:
 ...
 extra_hosts:
-      - "${NEXTCLOUD_FQDN}:${TRAEFIK_IP}"
+    - "${NEXTCLOUD_FQDN}:${TRAEFIK_IP}"
 ```
 
 There are two other points in `docker-compose.yml` for the Collabora service. We need to authorize the Nextcloud domain to make WOPI requests with `domain=`, and we need to authorize the `origin` header from the browser with `aliasgroup1=`.
@@ -192,8 +192,8 @@ There are two other points in `docker-compose.yml` for the Collabora service. We
 So we have:
 ```bash
 environment:
-      - domain=${COLLABORA_DOMAIN}
-      - aliasgroup1=https://${NEXTCLOUD_FQDN}
+    - domain=${COLLABORA_DOMAIN}
+    - aliasgroup1=https://${NEXTCLOUD_FQDN}
 ```
 
 Concerning TLS, it is managed by Traefik, so we need to have:
@@ -209,6 +209,30 @@ To debug and trace (header, IP), add:
 
 If a user is locked (too many authentication failures for example) : `.occ.sh user:enable <username>`
 
+
+### Preview and cpu/mem 
+
+Files previews is enabled by default and it can consume a lot of cpu & memory. Running this on a weak machine, can bring bad performance.
+
+Disable the previews:
+
+```bash
+./occ.sh config:system:set enable_previews --value=false --type=boolean
+```
+
+Or limit the concurrency and image size:
+
+```bash
+./occ.sh config:system:set enable_previews --value=true --type=boolean
+./occ.sh config:system:set preview_concurrency_new --value=1 --type=integer
+./occ.sh config:system:set preview_concurrency_all --value=2 --type=integer
+./occ.sh config:system:set preview_max_x --value=256 --type=integer
+./occ.sh config:system:set preview_max_y --value=256 --type=integer
+```
+
+[Check Nextcloud documentation](https://docs.nextcloud.com/server/latest/admin_manual/configuration_server/config_sample_php_parameters.html#enable-previews)
+
+By default, Docker uses all available resources. See the [Resource Limits](#resource-limits) section to configure CPU and memory limits.
 
 
 ## Backup & Restore
@@ -352,6 +376,7 @@ This project is licensed under the MIT License. See [LICENSE](LICENSE) for detai
 
 - [Official Nextcloud Documentation](https://docs.nextcloud.com/)
 - [Collabora Online Documentation](https://www.collaboraoffice.com/code/)
+- [Collabora Integration Guide](https://help.nextcloud.com/t/collabora-integration-guide/151879)
 - [Traefik Documentation](https://doc.traefik.io/traefik/)
 - [MyTraefik](https://github.com/D4void/MyTraefik) - Traefik reverse proxy configuration
 - [MyDockerApps](https://github.com/D4void/MyDockerApps) - Unified Docker Compose orchestrator
