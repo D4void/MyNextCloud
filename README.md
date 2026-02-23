@@ -115,7 +115,7 @@ Use the `occ.sh` wrapper for all occ commands:
 
 **Nextcloud**
 
-In the admin panel, you may see recommendations and you can apply them with the occ command (default phone region, maintenance window, DB missing indices).
+In the admin panel (overview), you may see recommendations and you can apply them with the occ command (default phone region, maintenance window, DB missing indices).
 
 Examples:
 
@@ -143,6 +143,13 @@ Finally, because of Traefik, we need to define it as a trusted proxy.
 ```bash
 source .env
 ./occ.sh config:system:set trusted_proxies 0 --value="$TRAEFIK_IP"
+```
+
+I also had a warning concerning .well-known URLs
+`Could not check that your web server serves '.well-known' correctly. Please check manually. To allow this check to run you have to make sure that your Web server can connect to itself. Therefore it must be able to resolve and connect to at least one of its 'trusted_domains' or the 'overwrite.cli.url'. This failure may be the result of a server-side DNS mismatch or outbound firewall rule.`
+
+```bash
+./occ.sh config:system:set trusted_domains 2 --value=localhost
 ```
 
 **Collabora Online Development Edition**
