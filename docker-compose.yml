@@ -56,7 +56,6 @@ services:
     depends_on:
       - traefik
     restart: unless-stopped
-    user: "root"
     cap_add:
       - MKNOD
       - SYS_CHROOT
@@ -73,10 +72,10 @@ services:
       - aliasgroup1=https://${NEXTCLOUD_FQDN}
       - username=${COLLABORA_USERNAME}
       - password=${COLLABORA_PASSWORD}
-      - DONT_GEN_SSL_CERT
+      - DONT_GEN_SSL_CERT="YES"
       - extra_params=--o:ssl.enable=false --o:ssl.termination=true --o:user_interface.use_integration_theme=false
     entrypoint: [ '/bin/bash', '-c' ]
-    command: [ 'coolconfig generate-proof-key && coolconfig update-system-template && su -s /bin/bash -p cool -c /start-collabora-online.sh' ]
+    command: [ 'coolconfig generate-proof-key && /start-collabora-online.sh' ]
     labels:
       - "traefik.enable=true"
       - "traefik.docker.network=MyTraefikNet"
