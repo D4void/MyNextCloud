@@ -76,7 +76,7 @@ services:
       - DONT_GEN_SSL_CERT
       - extra_params=--o:ssl.enable=false --o:ssl.termination=true --o:user_interface.use_integration_theme=false
     entrypoint: [ '/bin/bash', '-c' ]
-    command: [ 'coolconfig generate-proof-key && coolconfig update-system-template && su -s /bin/bash cool -c /start-collabora-online.sh' ]
+    command: [ 'coolconfig generate-proof-key && coolconfig update-system-template && su -s /bin/bash -p cool -c /start-collabora-online.sh' ]
     labels:
       - "traefik.enable=true"
       - "traefik.docker.network=MyTraefikNet"
