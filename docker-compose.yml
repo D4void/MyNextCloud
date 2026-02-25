@@ -74,6 +74,8 @@ services:
       - password=${COLLABORA_PASSWORD}
       - DONT_GEN_SSL_CERT
       - extra_params=--o:ssl.enable=false --o:ssl.termination=true --o:user_interface.use_integration_theme=false
+    entrypoint: [ '/bin/bash', '-c' ]
+    command: [ 'coolconfig generate-proof-key && coolconfig update-system-template && /start-collabora-online.sh' ]
     labels:
       - "traefik.enable=true"
       - "traefik.docker.network=MyTraefikNet"
