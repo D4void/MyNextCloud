@@ -46,6 +46,8 @@ __log() {
 set -o pipefail 1
 
 __log "Begin Nextcloud maintenance"
+
+docker stop nc-collabora
 docker exec nc-nextcloud php occ maintenance:mode --on
 if [[ $? -ne 0 ]]; then
 	__error "/!\\ Error setting maintenance." 1
@@ -76,6 +78,8 @@ docker exec nc-nextcloud php occ maintenance:mode --off
 if [[ $? -ne 0 ]]; then
 	__error "/!\\ Remove maintenance error." 1
 fi
+
+docker start nc-collabora
 
 set +o pipefail
 rm -rf ${BKP_DIR}/*
