@@ -74,6 +74,10 @@ services:
       # and avoids hitting the per_document.limit_load_secs timeout.
       - type: tmpfs
         target: /opt/cool/child-roots
+      # Mount local TrueType fonts so the container can use system fonts
+      # (e.g. Microsoft fonts like Arial, Calibri, Cambria by installing the `ttf-mscorefonts-installer` package).
+      - /usr/share/fonts/truetype:/usr/share/fonts/truetype/more:ro
+      - /usr/share/fonts/truetype:/opt/cool/systemplate/usr/share/fonts/truetype/more:ro
     environment:
       - domain=${COLLABORA_DOMAIN}
       - aliasgroup1=https://${NEXTCLOUD_FQDN}
