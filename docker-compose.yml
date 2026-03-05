@@ -18,7 +18,7 @@ services:
     cpus: 0.7
     mem_limit: 3g
     depends_on:
-      - traefik
+      - MyTraefik
     restart: unless-stopped
     command: --transaction-isolation=READ-COMMITTED --log-bin=binlog --binlog-format=ROW
     networks:
@@ -41,7 +41,7 @@ services:
     cpus: 0.25
     mem_limit: 512m
     depends_on:
-      - traefik
+      - MyTraefik
     restart: unless-stopped
     networks:
       - ncnet
@@ -54,7 +54,7 @@ services:
     cpus: 0.5
     mem_limit: 1g
     depends_on:
-      - traefik
+      - MyTraefik
     restart: unless-stopped
     cap_add:
       - MKNOD
@@ -123,7 +123,7 @@ services:
     cpus: 0.7
     mem_limit: 3g    
     depends_on:
-      traefik:
+      MyTraefik:
         condition: service_started
       nc-db:
         condition: service_started
@@ -170,7 +170,7 @@ services:
     cpus: 0.7
     mem_limit: 3g    
     depends_on:
-      - traefik
+      - MyTraefik
       - nc-db
       - nc-redis
       - nc-nextcloud
