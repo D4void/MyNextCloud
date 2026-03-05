@@ -86,7 +86,19 @@ services:
       - DONT_GEN_SSL_CERT="YES"
       # Increased limit_load_secs (default 100s) to tolerate cold page-cache on
       # first document open after several hours of idle (kit linking from systemplate).
-      - extra_params=--o:ssl.enable=false --o:ssl.termination=true --o:user_interface.use_integration_theme=false --o:per_document.limit_load_secs=300
+      - >-
+        extra_params=
+        --o:ssl.enable=false
+        --o:ssl.termination=true
+        --o:user_interface.use_integration_theme=false
+        --o:per_document.limit_load_secs=300
+        --o:num_prespawn_children=3
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:9980/hosting/discovery"]
+      interval: 2m
+      timeout: 10s
+      retries: 3
+      start_period: 30s
     entrypoint: [ '/bin/bash', '-c' ]
     command: [ 'coolconfig generate-proof-key && /start-collabora-online.sh' ]
     labels:
@@ -111,10 +123,14 @@ services:
     cpus: 0.7
     mem_limit: 3g    
     depends_on:
-      - traefik
-      - nc-db
-      - nc-redis
-      - nc-collabora
+      traefik:
+        condition: service_started
+      nc-db:
+        condition: service_started
+      nc-redis:
+        condition: service_started
+      nc-collabora:
+        condition: service_healthy
     restart: unless-stopped
     networks:
       - ncnet
