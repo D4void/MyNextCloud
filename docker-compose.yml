@@ -92,7 +92,9 @@ services:
         --o:ssl.termination=true
         --o:user_interface.use_integration_theme=false
         --o:per_document.limit_load_secs=300
-        --o:num_prespawn_children=3
+        --o:num_prespawn_children=2
+        --o:per_document.max_concurrency=4
+        --o:mount_jail_tree=false
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:9980/hosting/discovery"]
       interval: 2m
@@ -130,7 +132,7 @@ services:
       nc-redis:
         condition: service_started
       nc-collabora:
-        condition: service_healthy
+        condition: service_started
     restart: unless-stopped
     networks:
       - ncnet
