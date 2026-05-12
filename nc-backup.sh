@@ -46,6 +46,7 @@ __log() {
 set -o pipefail 1
 
 __log "Begin Nextcloud maintenance"
+
 docker exec nc-nextcloud php occ maintenance:mode --on
 if [[ $? -ne 0 ]]; then
 	__error "/!\\ Error setting maintenance." 1
