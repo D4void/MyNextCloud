@@ -7,6 +7,7 @@ Production-ready Nextcloud deployment with Docker Compose, featuring a custom im
 - **Custom Nextcloud Image**: Extended official image with `smbclient` for external SMB/CIFS storage
 - **Complete Stack**: Nextcloud, MariaDB 11.4, Redis cache, Collabora Online Development Edition (CODE)
 - **Traefik Integration**: Automatic HTTPS with Let's Encrypt certificates
+- **Secured Redis**: Password-protected Redis cache (`requirepass`)
 - **Automated Backups**: Integrated Plakar backup system for data and database
 - **Production Ready**: Resource limits, health checks, and proper volume management
 
@@ -39,6 +40,7 @@ Configure the following critical variables:
 - `TRAEFIK_IP`: Internal IP of Traefik container
 - `NC_VOL`: Host path for volume data (e.g., `/opt/MyNextcloud`)
 - Database credentials and service versions
+- `REDIS_PASSWORD`: Strong random password for Redis authentication
 
 ### 2. Initialize Volumes
 
@@ -276,11 +278,11 @@ Two-step restoration process:
 
 | Service | Image | Purpose | Port |
 |---------|-------|---------|------|
-| nc-nextcloud | d4void/nextcloud:32.0.6-apache | Main Nextcloud server | 80 |
-| nc-cron | d4void/nextcloud:32.0.6-apache | Background jobs | - |
+| nc-nextcloud | d4void/nextcloud:33.0.3-apache | Main Nextcloud server | 80 |
+| nc-cron | d4void/nextcloud:33.0.3-apache | Background jobs | - |
 | nc-db | mariadb:11.4-noble | Database with binlog | 3306 |
-| nc-redis | redis:8.0.2-alpine | Cache | 6379 |
-| nc-collabora | collabora/code:25.04.9.1.1 | Collabora Online | 9980 |
+| nc-redis | redis:8.6-alpine | Cache | 6379 |
+| nc-collabora | collabora/code:25.04.9.4.1 | Collabora Online | 9980 |
 
 ### Networks
 
@@ -308,6 +310,7 @@ ${NC_VOL}/
 - **Bind mounts**: Explicit control over file permissions and ownership
 - **Shared volumes**: nc-nextcloud and nc-cron share the same volumes for consistency
 - **MariaDB binlog**: Transaction isolation with binary logging for replication support
+- **Redis password**: Redis requires authentication (`requirepass`) — only `nc-nextcloud` and `nc-cron` can connect using `REDIS_HOST_PASSWORD`. Combined with the `internal: true` network (`MyNCnet`), Redis is not reachable from outside the stack.
 
 ## Configuration Details
 
@@ -341,6 +344,21 @@ The `nc-nextcloud` and `nc-collabora` services use these Traefik labels:
 
 
 ## Troubleshooting
+
+### Redis connection issues
+
+If Nextcloud logs show Redis authentication errors after a reconfiguration, verify that `config.php` contains the correct password. Since the Nextcloud entrypoint only writes `config.php` on first install, update it manually or via `occ`:
+
+```bash
+source .env
+./occ.sh config:system:set redis password --value="$REDIS_PASSWORD"
+```
+
+Then restart the containers:
+
+```bash
+docker compose restart nc-nextcloud nc-cron
+```
 
 ### Nextcloud can't connect to Collabora
 

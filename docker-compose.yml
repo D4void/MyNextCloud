@@ -43,6 +43,7 @@ services:
     depends_on:
       - traefik
     restart: unless-stopped
+    command: redis-server --requirepass ${REDIS_PASSWORD}
     networks:
       - ncnet
     volumes:
@@ -150,6 +151,7 @@ services:
       - MYSQL_DATABASE=${MARIADB_DATABASE}
       - MYSQL_HOST=nc-db
       - REDIS_HOST=nc-redis
+      - REDIS_HOST_PASSWORD=${REDIS_PASSWORD}
     labels:
       - "traefik.enable=true"
       - "traefik.docker.network=MyTraefikNet"
@@ -188,6 +190,7 @@ services:
     environment:
       - MYSQL_HOST=nc-db
       - REDIS_HOST=nc-redis
+      - REDIS_HOST_PASSWORD=${REDIS_PASSWORD}
     entrypoint: /cron.sh
 
 volumes:
