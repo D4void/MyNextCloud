@@ -79,6 +79,8 @@ services:
       # (e.g. Microsoft fonts like Arial, Calibri, Cambria by installing the `ttf-mscorefonts-installer` package).
       - /usr/share/fonts/truetype:/usr/share/fonts/truetype/more:ro
       - /usr/share/fonts/truetype:/opt/cool/systemplate/usr/share/fonts/truetype/more:ro
+      - ${NC_VOL}/collabora/keys/proof_key:/etc/coolwsd/proof_key:ro
+      - ${NC_VOL}/collabora/keys/proof_key.pub:/etc/coolwsd/proof_key.pub:ro
     environment:
       - domain=${COLLABORA_DOMAIN}
       - aliasgroup1=https://${NEXTCLOUD_FQDN}
@@ -96,14 +98,6 @@ services:
         --o:num_prespawn_children=2
         --o:per_document.max_concurrency=4
         --o:mount_jail_tree=false
-    healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:9980/hosting/discovery"]
-      interval: 2m
-      timeout: 10s
-      retries: 3
-      start_period: 30s
-    entrypoint: [ '/bin/bash', '-c' ]
-    command: [ 'coolconfig generate-proof-key && /start-collabora-online.sh' ]
     labels:
       - "traefik.enable=true"
       - "traefik.docker.network=MyTraefikNet"
